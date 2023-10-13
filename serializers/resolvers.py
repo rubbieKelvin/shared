@@ -19,8 +19,8 @@ def RELATED_QUERYSET_RESOLVER(object: models.Model, property: str) -> models.Que
         This will retrieve all related posts for the user.
     """
 
-    related_set = cast(models.manager.RelatedManager, getattr(object, property))
-    assert isinstance(
-        related_set, models.manager.RelatedManager
-    ), f"{property} is not a RelatedManager"
+    related_set = cast("models.manager.RelatedManager", getattr(object, property))
+    # assert isinstance(
+    #     related_set, models.manager.RelatedManager
+    # ), f"{property} is not a RelatedManager"
     return related_set.all()
