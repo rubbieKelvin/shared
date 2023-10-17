@@ -3,6 +3,7 @@ import functools
 
 from dataclasses import dataclass
 from django.urls import path as path_, URLPattern
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
@@ -14,6 +15,7 @@ from rest_framework.permissions import (
 )
 
 from . import exceptions
+from .schema import ApiSchema
 
 HTTP_METHODS = typing.Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
 PERMISSION_INPUT_TYPES: typing.TypeAlias = (
@@ -52,6 +54,8 @@ class Api:
         def example_view(request):
             # Your view logic here
     """
+
+    SCHEMA: ApiSchema | None = None
 
     def __init__(self, prefix: str | None = None) -> None:
         """
@@ -208,3 +212,14 @@ class Api:
         if url_path.endswith("/"):
             return url_path[:-1]
         return url_path
+
+    @staticmethod
+    def schema(path="openapi/") -> URLPattern:
+        
+        @api_view()
+        def schema_root(request: Request) -> Response:
+            if Api.SCHEMA:
+                return Response(Api.SCHEMA.model_dump())
+            return Response({"error": "No schema provided"}, status=404)
+
+        return path_(path, schema_root, name="openapi-schema")
