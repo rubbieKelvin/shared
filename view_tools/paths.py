@@ -103,9 +103,9 @@ class Api:
         path = path.strip()
 
         def decorator(func: typing.Callable[..., Response]):
+            @functools.wraps(func)
             @api_view([method])
             @permission_classes([permission] if permission else [AllowAny])
-            @functools.wraps(func)
             def wrapper(*args, **kwargs) -> Response:
                 try:
                     return func(*args, **kwargs)
