@@ -1,5 +1,5 @@
 import typing
-from .types import InternalRole
+from .typedefs import InternalRole
 from rest_framework.request import Request
 from django.contrib.auth.models import AbstractUser
 
