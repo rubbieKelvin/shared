@@ -2,7 +2,7 @@ import typing
 from shared import internal_role
 from dataclasses import dataclass
 from rest_framework.request import Request
-from shared.types import InternalRole, Json
+from shared.typedefs import InternalRole, Json
 
 
 T = typing.TypeVar("T")
