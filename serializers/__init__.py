@@ -1,5 +1,5 @@
 import typing
-from shared import internal_role
+from shared.role_utils import internal_role
 from dataclasses import dataclass
 from rest_framework.request import Request
 from shared.typedefs import InternalRole, Json
