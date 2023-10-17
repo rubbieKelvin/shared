@@ -60,7 +60,9 @@ class Api:
         Args:
             prefix (str, optional): A prefix to add to all endpoint paths. Must end with a slash if specified.
         """
-
+        prefix = prefix.strip()
+        
+        assert prefix != '', "Prefix cannot be an empty string"
         assert (prefix is None) or prefix.endswith(
             "/"
         ), "Prefix must end with a slash if specified"
