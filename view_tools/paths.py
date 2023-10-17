@@ -61,10 +61,11 @@ class Api:
             prefix (str, optional): A prefix to add to all endpoint paths. Must end with a slash if specified.
         """
         prefix = prefix.strip() if type(prefix) is str else prefix
-        pt = type(prefix)
-        
-        assert type(prefix) in [str, None], "Prefix should be None or string type"
-        assert prefix != '', "Prefix cannot be an empty string"
+
+        assert (
+            prefix == None or type(prefix) == str
+        ), "Prefix should be None or string type"
+        assert prefix != "", "Prefix cannot be an empty string"
         assert (prefix is None) or prefix.endswith(
             "/"
         ), "Prefix must end with a slash if specified"
