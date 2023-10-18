@@ -1,3 +1,4 @@
+import re
 import typing
 import functools
 
@@ -38,6 +39,84 @@ class ApiStruct:
     function: typing.Callable
     path: str
     name: str | None
+    api_parent_class: "Api"
+
+    @staticmethod
+    def resolve_django_path_to_field_pattern(path_string: str) -> str:
+        # Define a regular expression pattern to match "<data_type:name>"
+        pattern = r"<(\w+):(\w+)>"
+
+        # Use the re.sub function to replace the matched patterns with just the names
+        path_string = re.sub(pattern, r"<\2>", path_string)
+
+        # replace arrow braces
+        field_pattern = path_string.replace("<", "{").replace(">", "}")
+
+        return field_pattern
+
+    @staticmethod
+    def get_path_arguments(
+        path_string: str,
+    ) -> list[ApiSchema.PathItem.Operation.Parameter]:
+        # Use re.findall to extract variable names from the path string
+        pattern = r"<\w+:(\w+)>"
+        variable_names = re.findall(pattern, path_string)
+
+        return [
+            ApiSchema.PathItem.Operation.Parameter(name=var, required=True, in_="path")
+            for var in variable_names
+        ]
+
+    def get_operation(
+        self,
+        view: APIView,
+        method: typing.Literal[
+            "get",
+            "put",
+            "post",
+            "delete",
+            "patch",
+        ],
+    ) -> ApiSchema.PathItem.Operation | None:
+        func: typing.Callable | None = getattr(view, method, None)
+
+        if not func:
+            return None
+
+        summary = func.__doc__
+        tags = self.api_parent_class.tags
+        oparationId = f"{self.name or self.function.__name__}:{method}"
+
+        return ApiSchema.PathItem.Operation(
+            summary=summary,
+            oparationId=oparationId,
+            tags=tags,
+            parameters=self.get_path_arguments(self.path),
+        )
+
+    def generate_schema(self) -> tuple[str, ApiSchema.PathItem]:
+        view_class: APIView | None = getattr(self.function, "view_class", None)
+
+        if view_class == None:
+            raise ValueError("function should be a rest_framework view")
+
+        field_pattern = self.resolve_django_path_to_field_pattern(self.path)
+        description = self.function.__doc__
+
+        get_operation = self.get_operation(view_class, "get")
+        put_operation = self.get_operation(view_class, "put")
+        post_oparation = self.get_operation(view_class, "post")
+        delete_oparation = self.get_operation(view_class, "delete")
+        patch_oparation = self.get_operation(view_class, "patch")
+
+        return field_pattern, ApiSchema.PathItem(
+            description=description,
+            get=get_operation,
+            post=post_oparation,
+            delete=delete_oparation,
+            patch=patch_oparation,
+            put=put_operation,
+        )
 
 
 class Api:
@@ -56,13 +135,17 @@ class Api:
     """
 
     SCHEMA: ApiSchema | None = None
+    ENDPOINTS: list[ApiStruct] = []
 
-    def __init__(self, prefix: str | None = None) -> None:
+    def __init__(
+        self, prefix: str | None = None, tags: list[str] | None = None
+    ) -> None:
         """
         Initialize an Api instance.
 
         Args:
             prefix (str, optional): A prefix to add to all endpoint paths. Must end with a slash if specified.
+            tags (list[str], optional): A list of strings to classify this endpoint
         """
         prefix = prefix.strip() if type(prefix) is str else prefix
 
@@ -75,6 +158,7 @@ class Api:
         ), "Prefix must end with a slash if specified"
 
         self.prefix = prefix
+        self.tags = tags or []
         self.endpoints: list[ApiStruct] = []
 
     def endpoint(
@@ -121,8 +205,13 @@ class Api:
                     return Response(message, status=error.response_status)
 
             # store the function and properties
-            struct = ApiStruct(wrapper, path, name)
+            struct = ApiStruct(wrapper, path, name, api_parent_class=self)
+
+            # intance-wide list
             self.endpoints.append(struct)
+
+            # type-wide list
+            Api.ENDPOINTS.append(struct)
 
             return wrapper
 
@@ -176,8 +265,18 @@ class Api:
 
             ExposedAPIView.__name__ = class_.__name__
 
-            struct = ApiStruct(ExposedAPIView.as_view(), path, name)
+            struct = ApiStruct(
+                ExposedAPIView.as_view(),
+                path,
+                name or class_.__name__,
+                api_parent_class=self,
+            )
+
+            # intance-wide list
             self.endpoints.append(struct)
+
+            # type-wide list
+            Api.ENDPOINTS.append(struct)
 
             return ExposedAPIView
 
@@ -215,10 +314,15 @@ class Api:
 
     @staticmethod
     def schema(path="openapi/") -> URLPattern:
-        
+        # TODO: this handler should be cached
         @api_view()
-        def schema_root(request: Request) -> Response:
+        def schema_root(_: Request) -> Response:
             if Api.SCHEMA:
+                if not Api.SCHEMA.paths:
+                    for endpoint in Api.ENDPOINTS:
+                        k, v = endpoint.generate_schema()
+                        Api.SCHEMA.paths[k] = v
+
                 return Response(Api.SCHEMA.model_dump())
             return Response({"error": "No schema provided"}, status=404)
 

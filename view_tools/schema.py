@@ -1,3 +1,4 @@
+import typing
 import pydantic
 
 
@@ -34,9 +35,32 @@ class ApiSchema(pydantic.BaseModel):
     class ExternalDoc(pydantic.BaseModel):
         pass
 
+    class PathItem(pydantic.BaseModel):
+        class Operation(pydantic.BaseModel):
+            class Parameter(pydantic.BaseModel):
+                name: str
+                required: bool
+                in_: typing.Literal[
+                    "path", "query", "header", "cookie"
+                ] = pydantic.Field(default="path", serialization_alias="in")
+
+            summary: str | None
+            oparationId: str
+            tags: list[str] = pydantic.Field(default_factory=list)
+            parameters: list[Parameter] = pydantic.Field(default_factory=list)
+
+        ref: str | None = pydantic.Field(serialization_alias="$ref", default=None)
+        summmary: str | None = None
+        description: str | None = None
+        get: Operation | None = None
+        put: Operation | None = None
+        post: Operation | None = None
+        delete: Operation | None = None
+        patch: Operation | None = None
+
     openapi: str = "3.1"
     info: Info
     servers: list[Server] = pydantic.Field(default_factory=list)
-    paths: dict = pydantic.Field(default_factory=dict)
+    paths: dict[str, PathItem] = pydantic.Field(default_factory=dict)
     tags: list[Tag] = pydantic.Field(default_factory=list)
     externalDocs: ExternalDoc | None = pydantic.Field(default=None)
