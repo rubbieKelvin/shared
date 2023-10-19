@@ -57,8 +57,8 @@ class PostmanV2Collection:
     class Folder(pydantic.BaseModel):
         name: str
         description: str | None
-        item: "list[PostmanV2Collection.Endpoint|PostmanV2Collection.Folder]" = (
-            pydantic.Field(default_factory=list)
+        item: "typing.Sequence[PostmanV2Collection.Endpoint|PostmanV2Collection.Folder]" = pydantic.Field(
+            default_factory=list
         )
 
         @staticmethod
@@ -127,15 +127,58 @@ class PostmanV2Collection:
         def from_api_struct(
             struct: ApiStruct,
         ) -> "PostmanV2Collection.Endpoint|PostmanV2Collection.Folder":
-            return PostmanV2Collection.Endpoint(
-                name=struct.name or struct.function.__name__,
-                request=PostmanV2Collection.Endpoint.EndpointRequest(
-                    method="GET",
-                    description="<doc>",
-                    url=PostmanV2Collection.Endpoint.EndpointRequest.URL.from_api_struct(
-                        struct
+            view: APIView | None = getattr(struct.function, "view_class", None)
+
+            if view == None:
+                raise ValueError("function should be a rest_framework view")
+
+            description = struct.function.__doc__
+
+            # get acceptable methods that exists on this endpoint
+            methods = set([m.lower() for m in Api.USEABLE_METHODS]).intersection(
+                view.http_method_names
+            )
+            methods = list(methods)
+            assert len(methods), "Endpoint must handle at least one method"
+
+            if len(methods) == 1:
+                return PostmanV2Collection.Endpoint(
+                    name=struct.name or struct.function.__name__,
+                    request=PostmanV2Collection.Endpoint.EndpointRequest(
+                        method=typing.cast(HTTP_METHODS, methods[0].upper()),
+                        description=description,
+                        url=PostmanV2Collection.Endpoint.EndpointRequest.URL.from_api_struct(
+                            struct
+                        ),
                     ),
-                ),
+                )
+
+            method_items: list[PostmanV2Collection.Endpoint] = []
+            folder_name = struct.name or struct.function.__name__
+
+            for method in methods:
+                handler: typing.Callable | None = getattr(view, method, None)
+
+                if not handler:
+                    continue
+
+                endpoint = PostmanV2Collection.Endpoint(
+                    name=f"{folder_name} {method}",
+                    request=PostmanV2Collection.Endpoint.EndpointRequest(
+                        method=typing.cast(HTTP_METHODS, method.upper()),
+                        description=handler.__doc__,
+                        url=PostmanV2Collection.Endpoint.EndpointRequest.URL.from_api_struct(
+                            struct
+                        ),
+                    ),
+                )
+
+                method_items.append(endpoint)
+
+            return PostmanV2Collection.Folder(
+                name=struct.name or struct.function.__name__,
+                description=struct.function.__doc__,
+                item=method_items,
             )
 
     class Variable(pydantic.BaseModel):

@@ -151,8 +151,13 @@ class Api:
             # Your view logic here
     """
 
-    SCHEMA: ApiSchema | None = None
     APIs: list["Api"] = []
+
+    # these are the methods that will be handled across this codebase
+    USEABLE_METHODS: list[HTTP_METHODS] = ["DELETE", "GET", "PATCH", "POST", "PUT"]
+
+    # TODO: remove
+    SCHEMA: ApiSchema | None = None
 
     # TODO: remove
     ENDPOINTS: list[ApiStruct] = []
