@@ -29,11 +29,15 @@ class PostmanV2Collection:
         value: str
         type: typing.Literal["string"] = "string"
 
-    def __init__(self, *, info: Info) -> None:
+    def __init__(self, *, url: str, info: Info) -> None:
+        self.url = url.strip()
         self.info = info
         self.variables: list[PostmanV2Collection.Variable] = []
 
-    def add_var(self, key: str, value: str):
+        assert not self.url.endswith("/"), "Url should not end with slash"
+        self.var("BASE_URL", url)
+
+    def var(self, key: str, value: str):
         var = PostmanV2Collection.Variable(key=key, value=value)
         self.variables.append(var)
 

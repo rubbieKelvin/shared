@@ -59,7 +59,7 @@ class ApiStruct:
         path_string: str,
     ) -> list[ApiSchema.PathItem.Operation.Parameter]:
         # Use re.findall to extract variable names from the path string
-        pattern = r'<(?:\w+:)?(\w+)>'
+        pattern = r"<(?:\w+:)?(\w+)>"
         variable_names = re.findall(pattern, path_string)
 
         return [
@@ -135,6 +135,9 @@ class Api:
     """
 
     SCHEMA: ApiSchema | None = None
+    APIs: list["Api"] = []
+
+    # TODO: remove
     ENDPOINTS: list[ApiStruct] = []
 
     def __init__(
@@ -160,6 +163,7 @@ class Api:
         self.prefix = prefix
         self.tags = tags or []
         self.endpoints: list[ApiStruct] = []
+        Api.APIs.append(self)
 
     def endpoint(
         self,
