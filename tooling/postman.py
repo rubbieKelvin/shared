@@ -133,9 +133,15 @@ class PostmanV2Collection:
                     key: str
                     value: str = "<value>"
 
+                class Body(pydantic.BaseModel):
+                    mode: str = "raw"
+                    raw: str | None = None
+                    options: dict = pydantic.Field(default_factory=dict)
+
                 raw: str
                 host: tuple[str]
                 path: list[str]
+                body: Body | None = None
                 query: list[Query] = pydantic.Field(default_factory=list)
                 variable: list[Variable] = pydantic.Field(default_factory=list)
 
