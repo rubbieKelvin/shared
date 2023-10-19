@@ -17,8 +17,8 @@ from rest_framework.permissions import (
 
 from . import exceptions
 from .schema import ApiSchema
+from shared.typedefs import HTTP_METHODS
 
-HTTP_METHODS = typing.Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
 PERMISSION_INPUT_TYPES: typing.TypeAlias = (
     type[BasePermission] | OperandHolder | SingleOperandHolder
 )
@@ -41,6 +41,20 @@ class ApiStruct:
     name: str | None
     api_parent_class: "Api"
 
+    @property
+    def full_path(self) -> str:
+        url_path = (
+            f"{self.api_parent_class.prefix}{self.path}"
+            if self.api_parent_class.prefix
+            else self.path
+        )
+
+        if url_path.endswith("/"):
+            return url_path[:-1]
+
+        return url_path
+
+    # TODO: remove
     @staticmethod
     def resolve_django_path_to_field_pattern(path_string: str) -> str:
         # Define a regular expression pattern to match "<data_type:name>"
@@ -54,6 +68,7 @@ class ApiStruct:
 
         return field_pattern
 
+    # TODO: remove
     @staticmethod
     def get_path_arguments(
         path_string: str,
@@ -67,6 +82,7 @@ class ApiStruct:
             for var in variable_names
         ]
 
+    # TODO: remove
     def get_operation(
         self,
         view: APIView,
@@ -94,6 +110,7 @@ class ApiStruct:
             parameters=self.get_path_arguments(self.path),
         )
 
+    # TODO: remove
     def generate_schema(self) -> tuple[str, ApiSchema.PathItem]:
         view_class: APIView | None = getattr(self.function, "view_class", None)
 
@@ -141,7 +158,11 @@ class Api:
     ENDPOINTS: list[ApiStruct] = []
 
     def __init__(
-        self, prefix: str | None = None, tags: list[str] | None = None
+        self,
+        prefix: str | None = None,
+        tags: list[str] | None = None,
+        name: str | None = None,
+        description: str | None = None,
     ) -> None:
         """
         Initialize an Api instance.
@@ -162,6 +183,9 @@ class Api:
 
         self.prefix = prefix
         self.tags = tags or []
+        self.name = name
+        self.description = description
+
         self.endpoints: list[ApiStruct] = []
         Api.APIs.append(self)
 
@@ -303,19 +327,14 @@ class Api:
 
         return [
             path_(
-                self._make_url_path(endpoint),
+                endpoint.full_path,
                 endpoint.function,
                 name=endpoint.name or endpoint.function.__name__,
             )
             for endpoint in self.endpoints
         ]
 
-    def _make_url_path(self, endpoint: ApiStruct):
-        url_path = f"{self.prefix}{endpoint.path}" if self.prefix else endpoint.path
-        if url_path.endswith("/"):
-            return url_path[:-1]
-        return url_path
-
+    # TODO: remove
     @staticmethod
     def schema(path="openapi/") -> URLPattern:
         # TODO: this handler should be cached
