@@ -59,7 +59,7 @@ class ApiStruct:
         path_string: str,
     ) -> list[ApiSchema.PathItem.Operation.Parameter]:
         # Use re.findall to extract variable names from the path string
-        pattern = r"<\w+:(\w+)>"
+        pattern = r'<(?:\w+:)?(\w+)>'
         variable_names = re.findall(pattern, path_string)
 
         return [
@@ -323,7 +323,7 @@ class Api:
                         k, v = endpoint.generate_schema()
                         Api.SCHEMA.paths[k] = v
 
-                return Response(Api.SCHEMA.model_dump())
+                return Response(Api.SCHEMA.model_dump(by_alias=True))
             return Response({"error": "No schema provided"}, status=404)
 
         return path_(path, schema_root, name="openapi-schema")
