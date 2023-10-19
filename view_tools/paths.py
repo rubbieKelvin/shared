@@ -16,7 +16,6 @@ from rest_framework.permissions import (
 )
 
 from . import exceptions
-from .schema import ApiSchema
 from shared.typedefs import HTTP_METHODS
 
 PERMISSION_INPUT_TYPES: typing.TypeAlias = (
@@ -54,87 +53,6 @@ class ApiStruct:
 
         return url_path
 
-    # TODO: remove
-    @staticmethod
-    def resolve_django_path_to_field_pattern(path_string: str) -> str:
-        # Define a regular expression pattern to match "<data_type:name>"
-        pattern = r"<(\w+):(\w+)>"
-
-        # Use the re.sub function to replace the matched patterns with just the names
-        path_string = re.sub(pattern, r"<\2>", path_string)
-
-        # replace arrow braces
-        field_pattern = path_string.replace("<", "{").replace(">", "}")
-
-        return field_pattern
-
-    # TODO: remove
-    @staticmethod
-    def get_path_arguments(
-        path_string: str,
-    ) -> list[ApiSchema.PathItem.Operation.Parameter]:
-        # Use re.findall to extract variable names from the path string
-        pattern = r"<(?:\w+:)?(\w+)>"
-        variable_names = re.findall(pattern, path_string)
-
-        return [
-            ApiSchema.PathItem.Operation.Parameter(name=var, required=True, in_="path")
-            for var in variable_names
-        ]
-
-    # TODO: remove
-    def get_operation(
-        self,
-        view: APIView,
-        method: typing.Literal[
-            "get",
-            "put",
-            "post",
-            "delete",
-            "patch",
-        ],
-    ) -> ApiSchema.PathItem.Operation | None:
-        func: typing.Callable | None = getattr(view, method, None)
-
-        if not func:
-            return None
-
-        summary = func.__doc__
-        tags = self.api_parent_class.tags
-        oparationId = f"{self.name or self.function.__name__}:{method}"
-
-        return ApiSchema.PathItem.Operation(
-            summary=summary,
-            oparationId=oparationId,
-            tags=tags,
-            parameters=self.get_path_arguments(self.path),
-        )
-
-    # TODO: remove
-    def generate_schema(self) -> tuple[str, ApiSchema.PathItem]:
-        view_class: APIView | None = getattr(self.function, "view_class", None)
-
-        if view_class == None:
-            raise ValueError("function should be a rest_framework view")
-
-        field_pattern = self.resolve_django_path_to_field_pattern(self.path)
-        description = self.function.__doc__
-
-        get_operation = self.get_operation(view_class, "get")
-        put_operation = self.get_operation(view_class, "put")
-        post_oparation = self.get_operation(view_class, "post")
-        delete_oparation = self.get_operation(view_class, "delete")
-        patch_oparation = self.get_operation(view_class, "patch")
-
-        return field_pattern, ApiSchema.PathItem(
-            description=description,
-            get=get_operation,
-            post=post_oparation,
-            delete=delete_oparation,
-            patch=patch_oparation,
-            put=put_operation,
-        )
-
 
 class Api:
     """
@@ -155,12 +73,6 @@ class Api:
 
     # these are the methods that will be handled across this codebase
     USEABLE_METHODS: list[HTTP_METHODS] = ["DELETE", "GET", "PATCH", "POST", "PUT"]
-
-    # TODO: remove
-    SCHEMA: ApiSchema | None = None
-
-    # TODO: remove
-    ENDPOINTS: list[ApiStruct] = []
 
     def __init__(
         self,
@@ -243,9 +155,6 @@ class Api:
             # intance-wide list
             self.endpoints.append(struct)
 
-            # type-wide list
-            Api.ENDPOINTS.append(struct)
-
             return wrapper
 
         return decorator
@@ -308,9 +217,6 @@ class Api:
             # intance-wide list
             self.endpoints.append(struct)
 
-            # type-wide list
-            Api.ENDPOINTS.append(struct)
-
             return ExposedAPIView
 
         return decorator
@@ -338,20 +244,3 @@ class Api:
             )
             for endpoint in self.endpoints
         ]
-
-    # TODO: remove
-    @staticmethod
-    def schema(path="openapi/") -> URLPattern:
-        # TODO: this handler should be cached
-        @api_view()
-        def schema_root(_: Request) -> Response:
-            if Api.SCHEMA:
-                if not Api.SCHEMA.paths:
-                    for endpoint in Api.ENDPOINTS:
-                        k, v = endpoint.generate_schema()
-                        Api.SCHEMA.paths[k] = v
-
-                return Response(Api.SCHEMA.model_dump(by_alias=True))
-            return Response({"error": "No schema provided"}, status=404)
-
-        return path_(path, schema_root, name="openapi-schema")

@@ -46,8 +46,10 @@ class PostmanV2Collection:
         description: str | None = None
 
         # ...
-        schema: str = pydantic.Field(
-            default="https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+        schema_: str = pydantic.Field(
+            alias="schema",
+            serialization_alias="schema",
+            default="https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         )
         postman_id: uuid.UUID = pydantic.Field(
             default_factory=uuid.uuid4,
