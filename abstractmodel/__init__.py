@@ -123,6 +123,20 @@ class AbstractModel(models.Model):
 
     @staticmethod
     def _serialize_regular_model(model_instance: models.Model) -> dict:
+        """
+        Serialize a regular Django model instance into a dictionary.
+
+        This method serializes a regular Django model instance into a dictionary,
+        extracting attributes specified by the model's fields. It is used to serialize
+        related objects that are not derived from the `AbstractModel` class.
+
+        Args:
+            model_instance (models.Model): The regular Django model instance to be serialized.
+
+        Returns:
+            dict: A dictionary containing the serialized data for the model instance.
+
+        """
         res = {}
         fields = utils.getAllModelFields(model_instance.__class__)
         for field in fields:
