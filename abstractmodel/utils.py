@@ -40,13 +40,14 @@ def getAllModelFields(
     Returns:
     list[str]: a list of field names for the model"""
 
-    return [
-        field.name
-        for field in modelClass._meta.get_fields(include_hidden=False)
-        if isinstance(field, models.Field)
-        or (
-            isinstance(field, models.ForeignKey)
-            and getattr(field, "related_name", None)
-            and include_foriegn_keys
-        )
-    ]
+    # return [
+    #     field.name
+    #     for field in modelClass._meta.get_fields(include_hidden=False)
+    #     if isinstance(field, models.Field)
+    #     or (
+    #         isinstance(field, models.ForeignKey)
+    #         and getattr(field, "related_name", None)
+    #         and include_foriegn_keys
+    #     )
+    # ]
+    return [i.name for i in modelClass._meta.fields]
