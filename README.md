@@ -259,7 +259,7 @@ def my_validated_view(request: Request) -> Response:
 
     # Now you can work with the validated data
     return Response({"message": f"Your name is {body.name}"})
-``` 
+```
 
 By following this approach, you can ensure that your API endpoints receive valid and structured data, enhancing data quality and application security.
 
@@ -276,8 +276,6 @@ The error response includes:
 This error response ensures that clients receive clear and informative feedback when submitting invalid data to your API endpoints.
 
 This feature simplifies the process of validating incoming data against Pydantic schemas. By using the `@validate` decorator and the `body_tools.get_validated_body(request)` method, you can ensure that your Django REST framework project receives valid and structured data, promoting data integrity and application security.
-
-
 
 ### Defining Models
 
@@ -435,10 +433,58 @@ class Book(AbstractModel):
 
 In this example, the `author` field in the `Book` model is serialized with a custom structure that includes only the `name` attribute of the related `Author` model.
 
-By offering these serialization modes, you can easily control how related models are included in the serialized data, adapting the serialization output to your specific requirements. This flexibility ensures that your data is structured in a way that best serves your application's needs.
+You can easily control how related models are included in the serialized data with these modes, adapting the serialization output to your specific requirements. This flexibility ensures that your data is structured in a way that best serves your application's needs.
+
+### Serializing the model
+
+Let's provide an example of how the `serialize` method is used in your Django models:
+
+```python
+from shared.abstractmodel import AbstractModel, serialization
+from django.db import models
+
+class Author(AbstractModel):
+    name = models.CharField(max_length=100)
+
+class Book(AbstractModel):
+    title = models.CharField(max_length=100)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+    @property
+    def default_serialization_structure(self):
+        return {
+            'title': True,
+            'author': {
+                'name': True,  # Include the 'name' attribute of the Author model
+            },
+        }
+```
+
+In this example, we have two models: `Author` and `Book`. The `Book` model has a foreign key relationship with the `Author` model. To customize the serialization structure, we define the `default_serialization_structure` property for the `Book` model.
+
+Within the `default_serialization_structure`, we specify how we want the `Book` model to be serialized:
+
+- The `'title'` field is set to `True`, which means it will be included in the serialized data.
+- The `'author'` field is defined with a custom structure. In this custom structure, we include the `'name'` attribute of the related `Author` model.
+
+Now, when you use the `serialize` method on an instance of the `Book` model, it will serialize the data based on the specified structure. For example:
+
+```python
+book_instance = Book.objects.first()  # Get an instance of the Book model
+
+# Serialize the 'book_instance' using the specified structure
+serialized_data = book_instance.serialize()
+
+# 'serialized_data' will contain the 'title' and 'author' attributes
+# with the 'name' attribute of the related Author model
+```
+
+This way, you can control which attributes of the related models are included in the serialized data. This allows you to customize the serialization output to meet the specific needs of your application.
 
 ### Generating postman documentation
+
 ### Using exceptions
+
 ### Limitations
 
 ## Contributions
