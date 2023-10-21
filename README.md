@@ -65,7 +65,15 @@ If you prefer a one-time download, you can grab the library as a ZIP file from G
 
 ## Getting Started
 
-...
+- Creating api views
+- Request body validation
+- Creating models
+- Serialization
+- Generating postman documentation
+- Using exceptions
+- Limitations
+
+> TODO
 
 ## Contributions
 
