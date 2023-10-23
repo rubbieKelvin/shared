@@ -87,7 +87,15 @@ class AbstractModel(models.Model):
         return f"<{self.__class__.__name__} pk={str(self.pk)}>"
 
     @property
-    def default_serialization_structure(self) -> serialization.SerializationStructure:
+    def serializers(
+        self,
+    ) -> (
+        serialization.SerializationStructure
+        | tuple[
+            serialization.SerializationStructure,
+            dict[str, serialization.SerializationStructure],
+        ]
+    ):
         """
         Property that generates a default serialization structure for the model based on its fields.
 
@@ -103,7 +111,7 @@ class AbstractModel(models.Model):
             description = models.TextField()
 
             @property
-            def default_serialization_structure(self):
+            def serializers(self):
                 return {
                     'name': True,
                     'description': True,
@@ -112,12 +120,27 @@ class AbstractModel(models.Model):
             # or using serialization.struct
 
             @property
-            def default_serialization_structure(self):
+            def serializers(self):
                 return serialization.struct(
                     'name',
                     'description'
                 )
 
+            # or specify the default serializers with extra named serializers
+
+            @property
+            def serializers(self):
+                return serialization.struct(
+                    'name',
+                    'description'
+                ), {
+                    "basic": serialization.struct('id'),
+                    "complex": serialization.struct('id', 'name', "description'),
+                }
+
+                # then call 
+                # YourModel().serialize("basic")
+        
         """
         return serialization.struct(*utils.getAllModelFields(self.__class__))
 
@@ -149,7 +172,7 @@ class AbstractModel(models.Model):
         return res
 
     def serialize(
-        self, structure: serialization.SerializationStructure | None = None
+        self, structure: serialization.SerializationStructure | str | None = None
     ) -> dict[str, typedefs.Json]:
         """
         Serialize the model instance based on the provided structure.
@@ -162,7 +185,7 @@ class AbstractModel(models.Model):
             structure (serialization.SerializationStructure | None, optional):
                 A custom serialization structure that specifies which attributes to include
                 in the serialized data. If not provided, the default structure specified in
-                `default_serialization_structure` will be used.
+                `serializers` property will be used.
 
         Returns:
             dict[str, typedefs.Json]: A dictionary containing the serialized data.
@@ -170,7 +193,27 @@ class AbstractModel(models.Model):
         """
 
         # Use the provided structure or the default serialization structure
-        structure = structure or self.default_serialization_structure
+        if type(structure) is str:
+            more_serializers = (
+                self.serializers[1] if type(self.serializers) is tuple else {}
+            )
+            assert more_serializers, "This model does not have more serializers"
+
+            structure = more_serializers[structure]
+
+        elif structure is None:
+            default_serializer = (
+                self.serializers[0]
+                if type(self.serializers) is tuple
+                else self.serializers
+            )
+            default_serializer = typing.cast(
+                serialization.SerializationStructure, default_serializer
+            )
+
+            structure = default_serializer
+
+        structure = typing.cast(serialization.SerializationStructure, structure)
 
         # Initialize the result dictionary to store serialized data
         result = {}

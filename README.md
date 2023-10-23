@@ -301,7 +301,7 @@ By inheriting from `AbstractModel`, your model automatically inherits common fie
 
 This library also simplifies the process of customizing how your models are serialized. You can define specific serialization structures for each model. A serialization structure specifies which attributes to include in the serialized data.
 
-To customize serialization, override the `default_serialization_structure` property in your concrete model class. This property should return a custom serialization structure for your model.
+To customize serialization, override the `serializers` property in your concrete model class. This property should return a custom serialization structure for your model.
 
 Here's an example of how to define a custom serialization structure for a model:
 
@@ -311,7 +311,7 @@ class YourModel(AbstractModel):
     description = models.TextField()
 
     @property
-    def default_serialization_structure(self):
+    def serializers(self):
         return {
             'name': True,
             'description': True,
@@ -328,7 +328,7 @@ class YourModel(AbstractModel):
     description = models.TextField()
 
     @property
-    def default_serialization_structure(self):
+    def serializers(self):
         return serialization.struct('name', 'description')
 ```
 
@@ -364,7 +364,7 @@ class Book(AbstractModel):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
 
     @property
-    def default_serialization_structure(self):
+    def serializers(self):
         return serialization.struct(
             'title',
             author="SERIALIZE_AS_PK",  # Serialize the Author model as its primary key
@@ -394,7 +394,7 @@ class Book(AbstractModel):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
 
     @property
-    def default_serialization_structure(self):
+    def serializers(self):
         return serialization.struct(
             'title',
             author="SERIALIZE_AS_STRING",  # Serialize the Author model as its string representation
@@ -421,7 +421,7 @@ class Book(AbstractModel):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
 
     @property
-    def default_serialization_structure(self):
+    def serializers(self):
         return serialization.struct(
             'title',
             author=serialization.struct(
@@ -451,7 +451,7 @@ class Book(AbstractModel):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
 
     @property
-    def default_serialization_structure(self):
+    def serializers(self):
         return {
             'title': True,
             'author': {
@@ -460,9 +460,9 @@ class Book(AbstractModel):
         }
 ```
 
-In this example, we have two models: `Author` and `Book`. The `Book` model has a foreign key relationship with the `Author` model. To customize the serialization structure, we define the `default_serialization_structure` property for the `Book` model.
+In this example, we have two models: `Author` and `Book`. The `Book` model has a foreign key relationship with the `Author` model. To customize the serialization structure, we define the `serializers` property for the `Book` model.
 
-Within the `default_serialization_structure`, we specify how we want the `Book` model to be serialized:
+Within the `serializers`, we specify how we want the `Book` model to be serialized:
 
 - The `'title'` field is set to `True`, which means it will be included in the serialized data.
 - The `'author'` field is defined with a custom structure. In this custom structure, we include the `'name'` attribute of the related `Author` model.

@@ -3,7 +3,7 @@ from django.db import models
 
 ObjectSerializationMode = typing.Literal["SERIALIZE_AS_STRING", "SERIALIZE_AS_PK"]
 SerializationStructure: typing.TypeAlias = dict[
-    str, "bool|ObjectSerializationMode|SerializationStructure"
+    str, "typing.Literal[True]|ObjectSerializationMode|SerializationStructure"
 ]
 
 
