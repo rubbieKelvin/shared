@@ -1,6 +1,8 @@
 :root {
   font-family: "IBM Plex Sans", "Lucida Sans", "Lucida Sans Regular",
     "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  color: #1e212a;
+  font-size: 14px;
 }
 
 html,
@@ -20,7 +22,7 @@ body {
 
 a {
   text-decoration: none;
-  color: inherit;
+  color: #3a59e5;
 }
 
 p {

@@ -12,4 +12,19 @@ STATICFILES_DIRS = [
 STATIC_URL = "/static/"
 ```
 
-set `RK_SHARED_AUTHENTICATION_CONFIG` in settings
+set `SHARED` in settings
+    add `AUTHENTICATION_CONFIG` in `SHARED`
+    and create an instance of `shared.apps.authentication.settings.AuthenticationConfiguration`
+
+like so 
+```
+SHARED = {
+    "AUTHENTICATION_CONFIG": AuthenticationConfiguration(
+        application_name="MyShare",
+        application_url="https://www.google.com",
+        application_icon_url="https://cdn-icons-png.flaticon.com/512/2839/2839021.png",
+        callback_url="",
+    )
+}
+
+```
