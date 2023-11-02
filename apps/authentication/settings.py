@@ -18,6 +18,10 @@ class AuthConf(BaseModel):
         Field(input_type="email", placeholder="Email address", name="email"),
         Field(input_type="password", placeholder="Password", name="password"),
     ]
+    signup_fields: list[Field] = [
+        Field(input_type="email", placeholder="Email address", name="email"),
+        Field(input_type="password", placeholder="Password", name="password"),
+    ]
 
     @staticmethod
     def from_settings() -> "AuthConf":

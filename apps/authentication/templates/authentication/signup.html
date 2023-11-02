@@ -1,0 +1,33 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title%}Create account{% endblock %}
+
+{% block head %}
+<script src="{% static 'authentication/js/signup.js' %}"></script>
+{% endblock%}
+
+{% block heading %}
+<h3>
+  <span>Create a&nbsp;</span>
+  <a target="_blank" href="{{ config.application_url }}">
+    {{config.application_name}}
+  </a>
+  <span>&nbsp;account</span>
+</h3>
+{% endblock %}
+
+{% block body %}
+{{ block.super }}
+<div>
+  <input type="checkbox" name="remember_me" id="remember_me_input">
+  <label for="remember_me">
+    <span>Remember me</span>
+  </label>
+</div>
+{% endblock %}
+
+{% block footer %}
+<button type="submit">Continue</button>
+<p>Already have an account? <a href="{% url 'shared_auth_signin' %}">Login</a></p>
+{% endblock %}
