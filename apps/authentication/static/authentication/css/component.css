@@ -1,0 +1,45 @@
+#action-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  background-color: #fff;
+  padding: 3rem;
+  border-radius: 2em;
+  box-shadow: 0 0 2em rgba(156, 156, 156, 0.15);
+}
+
+#action-container > #heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#action-container > #heading > h1 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+#action-container > #form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+
+#action-container > #form > input {
+  height: 25px;
+}
+
+#action-container > #footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+#action-container > #footer > button {
+  width: 100%;
+  height: 30px;
+  border-radius: 6px;
+  outline: none;
+  border: 0px solid;
+}
