@@ -41,6 +41,7 @@ class UserManager(BaseUserManager):
 
 class ExtensibleUser(AbstractModel, AbstractUser, PermissionsMixin):
     username = None
+    email = models.EmailField(unique=True, help_text="User's email address")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -68,3 +69,6 @@ class ExtensibleUser(AbstractModel, AbstractUser, PermissionsMixin):
             "simple": serialization.struct("id", "first_name", "last_name", "email"),
             "identifier_only": serialization.struct("id", "email"),
         }
+
+    def __str__(self) -> str:
+        return self.email

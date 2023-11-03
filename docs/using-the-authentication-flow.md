@@ -1,3 +1,12 @@
+install `django-rest-knox`
+add `knox` to installed path
+add the following to settings 
+```
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+    ...
+}
+```
 add `shared.apps.authentication` to installed apps
 (optional) extend `shared.apps.authentication.models.ExtensibleUser`
 add `path("auth/", include("shared.apps.authentication.urls"))` to urlpatterns

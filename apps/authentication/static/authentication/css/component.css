@@ -92,3 +92,21 @@ button[type=submit] {
   outline: none;
   border: 0;
 }
+
+.error{
+  background-color: #ff00003b;
+  border: 1px solid #d43535;
+  padding: .6em .5rem;
+  border-radius: 8px;
+  color: #d43535;
+  display: flex;
+  gap: .8rem;
+}
+
+.errorlist {
+  list-style-type: none;
+  margin:  0;
+  padding: 0;
+  font-size: 14px;
+  color: #d43535;
+}
