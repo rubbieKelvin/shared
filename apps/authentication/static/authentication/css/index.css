@@ -1,7 +1,7 @@
 :root {
   font-family: "IBM Plex Sans", "Lucida Sans", "Lucida Sans Regular",
     "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-  color: #1e212a;
+  color: var(--shared-text-color);
   font-size: 16px;
 }
 
@@ -16,13 +16,23 @@ body,
 
 body {
   margin: 0;
-  background-color: #ededed;
+  background-color: var(--shared-background-color);
 }
 
 a {
   text-decoration: none;
-  color: #3a59e5;
+  color: var(--shared-accent);
   cursor: default;
+  font-weight: 600;
+}
+
+a:hover {
+  color: var(--shared-accent-hover);
+}
+
+a:focus,
+a:visited {
+  color: var(--shared-accent-active);
 }
 
 p {

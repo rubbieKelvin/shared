@@ -1,11 +1,11 @@
 #action-container {
   display: flex;
   flex-direction: column;
-  gap: 2em;
-  background-color: #fff;
+  gap: 3em;
+  background-color: var(--shared-wapper-background-color);
   padding: 4rem 3rem;
-  border-radius: 2em;
-  box-shadow: 0 0 2em rgba(156, 156, 156, 0.15);
+  border-radius: var(--shared-wrapper-border-radius);
+  box-shadow: 0 0 var(--shared-wrapper-elevation) rgba(156, 156, 156, 0.15);
   min-width: 24em;
 }
 
@@ -35,39 +35,60 @@
 #action-container > #form {
   display: flex;
   flex-direction: column;
-  gap: .9em;
+  gap: 1.6em;
 }
 
 #action-container > #footer {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: 1em;
 }
 
-button[type=submit] {
-  height: 50px;
-  border-radius: 6px;
-  outline: none;
-  border: 0px solid;
+button[type="submit"] {
+  height: 55px;
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--shared-accent);
+  color: var(--shared-button-text-color);
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: var(--shared-widget-border-radius);
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
   font-size: inherit;
+}
+
+button[type="submit"]:hover {
+  background-color: var(--shared-accent-hover);
+}
+
+button[type="submit"]:active {
+  background-color: var(--shared-accent-hover);
 }
 
 #form-group {
   display: flex;
-  border: 1px solid #c9cace;
-  border-radius: 0.6rem;
-  height: 45px;
+  border: 2px solid #c9cace;
+  border-radius: var(--shared-widget-border-radius);
+  height: 55px;
   padding: 0 6px;
   position: relative;
+}
+
+#form-group:focus-within{
+  border: 2px solid var(--shared-accent);
+  background-color: color-mix(in srgb,var(--shared-wapper-background-color),#000 5%);
 }
 
 #form-group > label {
   position: absolute;
   user-select: none;
   top: -10px;
-  background-color: #fff;
+  background-color: var(--shared-wapper-background-color);
   padding: 0 6px;
   font-size: 14px;
+  border-radius: 10px;
 }
 
 #form-group > div {
@@ -93,19 +114,19 @@ button[type=submit] {
   border: 0;
 }
 
-.error{
+.error {
   background-color: #ff00003b;
   border: 1px solid #d43535;
-  padding: .6em .5rem;
+  padding: 0.6em 0.5rem;
   border-radius: 8px;
   color: #d43535;
   display: flex;
-  gap: .8rem;
+  gap: 0.8rem;
 }
 
 .errorlist {
   list-style-type: none;
-  margin:  0;
+  margin: 0;
   padding: 0;
   font-size: 14px;
   color: #d43535;

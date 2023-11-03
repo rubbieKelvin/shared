@@ -10,7 +10,16 @@
 
     <style>
       :root {
-        --shared-border-radius: 8px;
+        --shared-background-color: rgb(170, 206, 237);
+        --shared-wapper-background-color: rgb(255, 255, 255);
+        --shared-wrapper-border-radius: 16px;
+        --shared-widget-border-radius: 8px;
+        --shared-wrapper-elevation: 3em;
+        --shared-accent: rgb(46, 109, 236);
+        --shared-accent-hover: rgb(29, 97, 235);
+        --shared-accent-active: rgb(8, 59, 162);
+        --shared-text-color: #1e212a;
+        --shared-button-text-color: #fff;
       }
     </style>
 
@@ -124,10 +133,8 @@
               </button>
               {% endif %}
             </div>
-
           </div>
-          {{ field.errors }}
-          {% endfor %} {% endblock %}
+          {{ field.errors }} {% endfor %} {% endblock %}
         </div>
 
         <div id="footer">{% block footer %} {% endblock %}</div>

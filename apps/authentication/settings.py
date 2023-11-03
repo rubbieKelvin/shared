@@ -5,12 +5,21 @@ from django import forms
 
 
 class BasicLoginForm(forms.Form):
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput)
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "Email address"})
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Password"}),
+    )
+
 
 class BasicSignupForm(forms.Form):
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput, min_length=6)
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "Email address"})
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Password"}), min_length=6
+    )
 
 
 class AuthConf(BaseModel):
@@ -22,7 +31,9 @@ class AuthConf(BaseModel):
     login_form: type[forms.Form] = BasicLoginForm
     signup_form: type[forms.Form] = BasicSignupForm
     username_field: str = "email"  # could be 'id'
-    exclude_fields_on_create: list[str] = [] # fields we dont want to pass into the user model
+    exclude_fields_on_create: list[
+        str
+    ] = []  # fields we dont want to pass into the user model
 
     @staticmethod
     def from_settings() -> "AuthConf":
