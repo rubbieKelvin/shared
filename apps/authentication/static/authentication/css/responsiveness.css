@@ -4,11 +4,14 @@
     display: initial !important;
   }
 
+  body {
+    background-color: var(--shared-wrapper-background-color);
+  }
+
   #action-container {
     border-radius: 0 !important;
     min-width: auto !important;
     width: auto !important;
-    padding: 1em 1em 1em 1em !important;
-    height: 100% !important;
+    box-shadow: none !important;
   }
 }
