@@ -7,6 +7,7 @@
   border-radius: var(--shared-wrapper-border-radius);
   box-shadow: 0 0 var(--shared-wrapper-elevation) rgba(156, 156, 156, 0.15);
   min-width: 24em;
+  width: auto;
 }
 
 #action-container > #heading {

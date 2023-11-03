@@ -1,0 +1,14 @@
+/* Media query for screens with a maximum width of 768px (typical for mobile devices) */
+@media (max-width: 768px) {
+  #app {
+    display: initial !important;
+  }
+
+  #action-container {
+    border-radius: 0 !important;
+    min-width: auto !important;
+    width: auto !important;
+    padding: 1em 1em 1em 1em !important;
+    height: 100% !important;
+  }
+}
