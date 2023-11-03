@@ -156,5 +156,6 @@ class LoginView(View):
         return login_and_redirect(user, config)
 
 
-def logout_page(request: HttpRequest) -> HttpResponse:
-    return render(request, "", context={})
+class LogoutView(View):
+    def post(self, request: HttpRequest) -> HttpResponse:
+        return HttpResponse('not yet implemented')
