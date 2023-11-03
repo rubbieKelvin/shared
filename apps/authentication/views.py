@@ -25,14 +25,16 @@ class CallbackParams(BaseModel):
     created: typing.Literal[1, 0]
 
 
-def login_and_redirect(user: ExtensibleUser, config: AuthConf):
+def login_and_redirect(
+    user: ExtensibleUser, config: AuthConf, created: typing.Literal[1, 0] = 0
+):
     # Create a Knox token for the authenticated user
     knox_token_manager: AuthTokenManager = typing.cast(
         AuthTokenManager, AuthToken.objects
     )
     _, token = knox_token_manager.create(user=user)
 
-    callback_data = CallbackParams(code=token, created=1, user=str(user.pk))
+    callback_data = CallbackParams(code=token, created=created, user=str(user.pk))
 
     # https://github.com/gruns/furl/
     url_obj = furl(config.callback_url)
@@ -91,7 +93,7 @@ class SignupView(View):
 
         user = User.objects.create_user(**{k: data[k] for k in user_create_fields})
 
-        return login_and_redirect(user, config)
+        return login_and_redirect(user, config, created=1)
 
 
 class LoginView(View):
@@ -140,7 +142,10 @@ class LoginView(View):
 
         if user == None:
             return self._return_with_flash(
-                request, f"User with that {config.username_field} does not exist", config, form
+                request,
+                f"User with that {config.username_field} does not exist",
+                config,
+                form,
             )
 
         user = typing.cast(ExtensibleUser, user)

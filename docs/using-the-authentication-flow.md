@@ -37,3 +37,5 @@ SHARED = {
 }
 
 ```
+
+the backend will redirect to your frontend with a token/code once done
