@@ -7,7 +7,7 @@ from shared.abstractmodel import AbstractModel, serialization, utils
 
 class UserManager(BaseUserManager):
     def create_user(
-        self, email: str, password: str, **extra_fields: str | bool
+        self, email: str, password: str, **extra_fields: str | bool | None
     ) -> "ExtensibleUser":
         """
         Create and save a User with the given email and password.
@@ -27,7 +27,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(
-        self, email: str, password: str, **extra_fields: str | bool
+        self, email: str, password: str, **extra_fields: str | bool| None
     ) -> "ExtensibleUser":
         """
         Create and save a SuperUser with the given email and password.
