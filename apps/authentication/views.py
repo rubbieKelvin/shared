@@ -46,6 +46,7 @@ def login_and_redirect(
 class SignupView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         config = AuthConf.from_settings()
+        initaial_flash_error = request.GET.get("flash")
 
         return render(
             request,
@@ -53,6 +54,7 @@ class SignupView(View):
             {
                 "config": config,
                 "form": config.signup_form(),
+                "flash_error": initaial_flash_error,
             },
         )
 
@@ -99,6 +101,7 @@ class SignupView(View):
 class LoginView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         config = AuthConf.from_settings()
+        initaial_flash_error = request.GET.get("flash")
 
         return render(
             request,
@@ -106,6 +109,7 @@ class LoginView(View):
             {
                 "config": config,
                 "form": config.login_form(),
+                "flash_error": initaial_flash_error,
             },
         )
 
@@ -158,4 +162,4 @@ class LoginView(View):
 
 class LogoutView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
-        return HttpResponse('not yet implemented')
+        return HttpResponse("not yet implemented")
