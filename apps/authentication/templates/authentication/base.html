@@ -10,16 +10,16 @@
 
     <style>
       :root {
-        --shared-background-color: rgb(170, 206, 237);
-        --shared-wapper-background-color: rgb(255, 255, 255);
-        --shared-wrapper-border-radius: 16px;
-        --shared-widget-border-radius: 8px;
-        --shared-wrapper-elevation: 3em;
-        --shared-accent: rgb(46, 109, 236);
-        --shared-accent-hover: rgb(29, 97, 235);
-        --shared-accent-active: rgb(8, 59, 162);
-        --shared-text-color: #1e212a;
-        --shared-button-text-color: #fff;
+        --shared-background-color: {{ config.customisation.background_color }};
+        --shared-wapper-background-color: {{ config.customisation.wapper_background_color }};
+        --shared-wrapper-border-radius: {{ config.customisation.wrapper_border_radius }};
+        --shared-widget-border-radius: {{ config.customisation.widget_border-radius }};
+        --shared-wrapper-elevation: {{ config.customisation.wrapper_elevation }};
+        --shared-accent: {{ config.customisation.accent }};
+        --shared-accent-hover: {{ config.customisation.accent_hover }};
+        --shared-accent-active: {{ config.customisation.accent_active }};
+        --shared-text-color: {{ config.customisation.text_color }};
+        --shared-button-text-color: {{ config.customisation.button_text_color }};
       }
     </style>
 

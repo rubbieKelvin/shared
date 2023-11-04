@@ -23,6 +23,18 @@ class BasicSignupForm(forms.Form):
 
 
 class AuthConf(BaseModel):
+    class Customisation(BaseModel):
+        background_color: str | None = "rgb(170, 206, 237)"
+        wapper_background_color: str | None = "rgb(255, 255, 255)"
+        wrapper_border_radius: str | None = "16px"
+        widget_border_radius: str | None = "8px"
+        wrapper_elevation: str | None = "3em"
+        accent: str | None = "rgb(46, 109, 236)"
+        accent_hover: str | None = "rgb(29, 97, 235)"
+        accent_active: str | None = "rgb(8, 59, 162)"
+        text_color: str | None = "#1e212a"
+        button_text_color: str | None = "#fff"
+
     company_name: str | None = None
     application_name: str
     application_url: str
@@ -34,6 +46,7 @@ class AuthConf(BaseModel):
     exclude_fields_on_create: list[
         str
     ] = []  # fields we dont want to pass into the user model
+    customisation: Customisation = Customisation()
 
     @staticmethod
     def from_settings() -> "AuthConf":
