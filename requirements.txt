@@ -4,3 +4,4 @@ pydantic[email]
 pytest
 furl
 django-rest-knox
+nanoid

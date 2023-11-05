@@ -1,12 +1,22 @@
 import typing
+
 from furl import furl
 from pydantic import BaseModel
-from django.shortcuts import render, redirect
-from django.http import HttpRequest, HttpResponse
-from django.contrib.auth import get_user_model
+
 from django.views import View
 from django.forms import Form
-from .models import ExtensibleUser
+from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect
+from django.http import HttpRequest, HttpResponse
+
+from .models import ExtensibleUser, CallbackInformation
+
+from shared.view_tools.paths import Api
+from shared.view_tools import body_tools
+from shared.view_tools import exceptions
+
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 try:
     from knox.models import AuthToken, AuthTokenManager
@@ -21,20 +31,26 @@ from .settings import AuthConf
 
 class CallbackParams(BaseModel):
     code: str
-    user: str
     created: typing.Literal[1, 0]
 
 
-def login_and_redirect(
-    user: ExtensibleUser, config: AuthConf, created: typing.Literal[1, 0] = 0
-):
+def create_token(user) -> str:
     # Create a Knox token for the authenticated user
     knox_token_manager: AuthTokenManager = typing.cast(
         AuthTokenManager, AuthToken.objects
     )
     _, token = knox_token_manager.create(user=user)
+    return token
 
-    callback_data = CallbackParams(code=token, created=created, user=str(user.pk))
+
+def login_and_redirect(
+    user: ExtensibleUser, config: AuthConf, created: typing.Literal[1, 0] = 0
+):
+    token = create_token(user)
+
+    cb_info = CallbackInformation.objects.create(token=token)
+
+    callback_data = CallbackParams(code=cb_info.code, created=created)
 
     # https://github.com/gruns/furl/
     url_obj = furl(config.callback_url)
@@ -160,6 +176,25 @@ class LoginView(View):
         return login_and_redirect(user, config)
 
 
-class LogoutView(View):
-    def post(self, request: HttpRequest) -> HttpResponse:
-        return HttpResponse("not yet implemented")
+api_endpoints = Api()
+
+
+class ExchangeCodeInput(BaseModel):
+    code: str
+
+
+@api_endpoints.endpoint("exchange", method="POST", name="Exchange")
+@body_tools.validate(ExchangeCodeInput)
+def exchange_code(request: Request) -> Response:
+    """Exchange callback code for token, the web login endpoints redirects to the frontend with codes and not the actual token."""
+    body: ExchangeCodeInput = body_tools.get_validated_body(request)
+
+    try:
+        code = CallbackInformation.objects.get(code=body.code)
+    except CallbackInformation.DoesNotExist:
+        raise exceptions.ApiException("Invalid code")
+
+    token = code.token
+    code.delete()
+
+    return Response({"token": token})

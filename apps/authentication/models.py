@@ -1,4 +1,8 @@
+import string
+from nanoid import non_secure_generate
+
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 
@@ -27,7 +31,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(
-        self, email: str, password: str, **extra_fields: str | bool| None
+        self, email: str, password: str, **extra_fields: str | bool | None
     ) -> "ExtensibleUser":
         """
         Create and save a SuperUser with the given email and password.
@@ -72,3 +76,15 @@ class ExtensibleUser(AbstractModel, AbstractUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return self.email
+
+
+useable_chars = string.ascii_letters + string.digits
+
+
+def default_code_gen() -> str:
+    return non_secure_generate(useable_chars, size=12)
+
+
+class CallbackInformation(AbstractModel):
+    code = models.CharField(max_length=12, default=default_code_gen)
+    token = models.TextField()
