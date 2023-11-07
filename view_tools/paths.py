@@ -23,6 +23,22 @@ PERMISSION_INPUT_TYPES: typing.TypeAlias = (
 )
 
 
+def handle_err(func: typing.Callable):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except exceptions.ApiException as error:
+            message: exceptions.Error = {
+                "error": error.message,
+                "code": error.code,
+            }
+            return Response(message, status=error.response_status)
+        except Exception as e:
+            raise e
+
+    return wrapper
+
+
 @dataclass
 class ApiStruct:
     """
@@ -204,6 +220,31 @@ class Api:
                 __doc__ = class_.__doc__ or f"Api view for {path}"
 
                 permission_classes = [permission] if permission else [AllowAny]
+
+                @handle_err
+                def get(self, *args, **kwargs):
+                    handler = getattr(super(), "get", self.http_method_not_allowed)
+                    return handler(*args, **kwargs)
+
+                @handle_err
+                def post(self, *args, **kwargs):
+                    handler = getattr(super(), "post", self.http_method_not_allowed)
+                    return handler(*args, **kwargs)
+
+                @handle_err
+                def patch(self, *args, **kwargs):
+                    handler = getattr(super(), "patch", self.http_method_not_allowed)
+                    return handler(*args, **kwargs)
+
+                @handle_err
+                def delete(self, *args, **kwargs):
+                    handler = getattr(super(), "delete", self.http_method_not_allowed)
+                    return handler(*args, **kwargs)
+
+                @handle_err
+                def put(self, *args, **kwargs):
+                    handler = getattr(super(), "put", self.http_method_not_allowed)
+                    return handler(*args, **kwargs)
 
             ExposedAPIView.__name__ = class_.__name__
 
