@@ -55,6 +55,16 @@ def _handle_dumps_substructure(
         raise Exception("Invalid structure value for object field")
 
 
+class AbstactModelObject(models.Manager):
+    def get_or_raise_exception(
+        self, query: models.Q, exception: BaseException = Exception("Object not found")
+    ):
+        try:
+            return self.get(query)
+        except models.Model.DoesNotExist:
+            raise exception
+
+
 class AbstractModel(models.Model):
     """
     Abstract base model for all database models in your application. It includes common fields such as 'id',
@@ -75,6 +85,8 @@ class AbstractModel(models.Model):
     id = models.UUIDField(unique=True, default=uuid4, primary_key=True, editable=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+
+    objects: AbstactModelObject = AbstactModelObject()
 
     class Meta:
         abstract = True
