@@ -7,7 +7,11 @@ from django.db.models.fields.related import ForeignKey
 
 from . import utils
 from . import serialization
+
 from shared import typedefs
+from shared.view_tools import exceptions
+
+from rest_framework.request import Request
 
 
 def _handle_dumps_substructure(
@@ -311,3 +315,52 @@ class AbstractModel(models.Model):
         # Serialize the data using the dynamic model
         dumped_data = dynamic_model().model_dump(mode="json")
         return dumped_data
+
+    _PERMISSION_HANDLER_TYPE = typing.Callable[[Request, typing.Self], None]
+
+    def assert_permissions(
+        self,
+        request: Request,
+        permissions: list[_PERMISSION_HANDLER_TYPE] | tuple[_PERMISSION_HANDLER_TYPE],
+    ):
+        """
+        Assert Permissions for a Model Instance
+
+        This method tests a model instance against a list of permissions.
+        Each permission is a function that takes in a request and a model instance,
+        and then raises an `AccessPermissionError` from the `shared.view_tools.exceptions` module
+        if the request does not have access to the resource.
+
+        Args:
+            request (Request): The HTTP request object to be checked against the permissions.
+            permissions (list[_PERMISSION_HANDLER_TYPE] | tuple[_PERMISSION_HANDLER_TYPE]): A list or tuple of permission handler functions. These functions should accept a `Request` object as the first argument and a model instance (self) as the second argument.
+
+        Raises:
+            AccessPermissionError: If any of the permission checks raise an `AccessPermissionError`, this method will re-raise that exception, indicating that the request does not have the necessary permissions to access the resource.
+
+        Example:
+            ```python
+            from shared.view_tools.exceptions import AccessPermissionError
+
+            def check_read_permission(request, model_instance):
+                if not has_read_permission(request, model_instance):
+                    raise AccessPermissionError("Read permission denied")
+
+            def check_write_permission(request, model_instance):
+                if not has_write_permission(request, model_instance):
+                    raise AccessPermissionError("Write permission denied")
+
+            your_instance = YourClass()
+            try:
+                your_instance.assert_permissions(request, [check_read_permission, check_write_permission])
+                # If the permissions are granted, continue processing the request.
+            except AccessPermissionError as e:
+                # Handle the permission error or return an appropriate response to the client.
+            ```
+        """
+
+        for permission in permissions:
+            try:
+                permission(request, self)
+            except exceptions.AccessPermissionError as e:
+                raise e

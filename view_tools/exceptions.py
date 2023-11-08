@@ -21,3 +21,8 @@ class ApiException(BaseException):
 class ResourceNotFound(ApiException):
     response_status = status.HTTP_404_NOT_FOUND
     default_code = "Resource not found"
+
+
+class AccessPermissionError(ApiException):
+    response_status = status.HTTP_401_UNAUTHORIZED
+    default_code = "This entity is unable to access this resource"
