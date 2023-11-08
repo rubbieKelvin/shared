@@ -11,7 +11,7 @@ from shared import typedefs
 
 
 def _handle_dumps_substructure(
-    model_instance: models.Model,
+    model_instance: models.Model | None,
     substructure: serialization.SerializationStructure
     | serialization.ObjectSerializationMode,
 ):
@@ -37,6 +37,8 @@ def _handle_dumps_substructure(
     Raises:
         Exception: If an invalid structure value is provided for the object field.
     """
+    if model_instance == None:
+        return
 
     if substructure == "SERIALIZE_AS_PK":
         return model_instance.pk
@@ -50,7 +52,7 @@ def _handle_dumps_substructure(
         else:
             raise Exception("this part of the code should not be reachable")
     else:
-        raise Exception("Ivalid structure value for object field")
+        raise Exception("Invalid structure value for object field")
 
 
 class AbstractModel(models.Model):
@@ -138,9 +140,9 @@ class AbstractModel(models.Model):
                     "complex": serialization.struct('id', 'name', "description'),
                 }
 
-                # then call 
+                # then call
                 # YourModel().serialize("basic")
-        
+
         """
         return serialization.struct(*utils.getAllModelFields(self.__class__))
 
@@ -236,11 +238,10 @@ class AbstractModel(models.Model):
                 sub_structure = structure[field]
 
                 # make sure the sub_structure is not a boolean
-                sub_structure = serialization.struct(
-                    *utils.getAllModelFields(related_field.model)
-                    if type(sub_structure) == bool
-                    else sub_structure
-                )
+                if type(sub_structure) is bool:
+                    sub_structure = serialization.struct(
+                        *utils.getAllModelFields(related_field.model)
+                    )
 
                 if related_field.type == "object":
                     # handle one to one foriegn key

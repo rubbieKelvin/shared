@@ -12,6 +12,7 @@ def struct(
     __related_field_query: models.Q | None = None,
     **kwargs: SerializationStructure | ObjectSerializationMode
 ) -> SerializationStructure:
+    """Defines the structure that a model should be represented as in json format."""
     return {
         **{k: True for k in args},
         **kwargs,
