@@ -62,14 +62,12 @@ class ExtensibleUser(AbstractModel, AbstractUser, PermissionsMixin):
     @property
     def serializers(
         self,
-    ) -> tuple[
-        serialization.SerializationStructure,
-        dict[str, serialization.SerializationStructure],
-    ]:
+    ) -> dict[str, serialization.SerializationStructure]:
         all_fields = utils.getAllModelFields(self.__class__)
         exempt_fields = ["password"]
 
-        return serialization.struct(*set(all_fields).difference(exempt_fields)), {
+        return {
+            "~": serialization.struct(*set(all_fields).difference(exempt_fields)),
             "simple": serialization.struct("id", "first_name", "last_name", "email"),
             "identifier_only": serialization.struct("id", "email"),
         }
