@@ -5,3 +5,9 @@ Json: typing.TypeAlias = (
 )
 
 HTTP_METHODS = typing.Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
+
+
+class NotSet:
+    """Use this class instead of None for propertites and fields that were not set"""
+
+    pass
