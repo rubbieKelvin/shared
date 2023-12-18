@@ -33,8 +33,7 @@ a:hover {
   color: var(--shared-accent-hover);
 }
 
-a:focus,
-a:visited {
+a:focus {
   color: var(--shared-accent-active);
 }
 
