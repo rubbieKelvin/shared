@@ -11,17 +11,74 @@ from rest_framework.response import Response
 from shared.utils.query import makeQuery
 from shared.abstractmodel import AbstractModel
 
-from ..body_tools import validate_request
-from ..exceptions import ResourceNotFound
-from ..pagination import paginate_by_queryparam, paginate
+from .paths import Api
+from .body_tools import validate_request
+from .pagination import paginate_by_queryparam, paginate
+from .exceptions import ResourceNotFound, AccessPermissionError, ApiException
 
-from .schemas import *
-from .typedefs import *
-from .mixins import PermissionMixin
+
+MODEL_VIEW_ACTIONS = typing.Literal[
+    "ALL",
+    "GET",
+    "FIND",
+    "INSERT",
+    "INSERT_MANY",
+    "UPDATE_ONE",
+    "UPDATE_MANY",
+    "DELETE",
+    "DELETE_MANY",
+]
+
+
+class PkSchema(BaseModel):
+    pk: int | str
+
+
+class PksSchema(BaseModel):
+    pks: list[int | str]
+
+
+class FindManySchema(BaseModel):
+    where: dict[str, typing.Any]
+    limit: int = 100
+    offset: int = 0
+
+
+class InsertManySchema[T: BaseModel](BaseModel):
+    objects: list[T]
+
+
+class UpdateOneSchema[T: BaseModel](PkSchema):
+    set_: T
+
+
+class UpdateManySchema[T: BaseModel](PksSchema):
+    set_: T
+
+
+class PermissionMixin:
+    @classmethod
+    def permit_get(cls, request: Request):
+        raise AccessPermissionError("You're not permitted to access this resource")
+
+    @classmethod
+    def permit_insert(cls, request: Request):
+        raise AccessPermissionError(
+            "You're not permitted to create a resource in this scope"
+        )
+
+    @classmethod
+    def permit_update(cls, request: Request):
+        raise AccessPermissionError("You're not permitted to update a resource")
+
+    @classmethod
+    def permit_delete(cls, request: Request):
+        raise AccessPermissionError("You're not permitted to delete this resource")
 
 
 class ModelView[T: AbstractModel](PermissionMixin):
     model: type[T]
+    path_root: str | None = None
     base_filter_query: Q | None = None
     must_update_fields: list[str] = [
         "last_updated"
@@ -31,6 +88,10 @@ class ModelView[T: AbstractModel](PermissionMixin):
     update_schema: type[UpdateOneSchema]
     update_many_schema: type[UpdateManySchema]
     insert_many_schema: type[InsertManySchema]
+
+    @classmethod
+    def fix_pk_type[X: int | str](cls, pk: X) -> X:
+        return pk
 
     @classmethod
     def serializer_func(
@@ -58,12 +119,12 @@ class ModelView[T: AbstractModel](PermissionMixin):
         query_set = cls._get_query_set(request)
 
         # get instance
+        pk = cls.fix_pk_type(body.pk)
+
         try:
-            instance = query_set.get(pk=body.pk)
+            instance = query_set.get(pk=pk)
         except cls.model.DoesNotExist:
-            raise ResourceNotFound(
-                f"f{cls.model.__class__.__name__}({body.pk}) not found"
-            )
+            raise ResourceNotFound(f"f{cls.model.__class__.__name__}({pk}) not found")
 
         # return object
         return Response(cls.serializer_func(instance, "GET"))
@@ -116,8 +177,9 @@ class ModelView[T: AbstractModel](PermissionMixin):
         cls.permit_update(request)
         body = validate_request(cls.update_schema, request)
 
+        pk = cls.fix_pk_type(body.pk)
         queryset = cls._get_query_set(request)
-        instance = queryset.get(pk=body.pk)
+        instance = queryset.get(pk=pk)
         set_ = body.model_dump().get("set_", {})
 
         for key, value in set_:
@@ -136,7 +198,7 @@ class ModelView[T: AbstractModel](PermissionMixin):
         instances: list[T] = []
 
         for pk in body.pks:
-            instance = query_set.get(pk=pk)
+            instance = query_set.get(pk=cls.fix_pk_type(pk))
 
             for key, value in set_.items():
                 setattr(instance, key, value)
@@ -155,7 +217,7 @@ class ModelView[T: AbstractModel](PermissionMixin):
         query_set = cls._get_query_set(request)
         body = validate_request(PkSchema, request)
 
-        instance = query_set.get(pk=body.pk)
+        instance = query_set.get(pk=cls.fix_pk_type(body.pk))
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -167,15 +229,29 @@ class ModelView[T: AbstractModel](PermissionMixin):
         query_set = cls._get_query_set(request)
         body = validate_request(PksSchema, request)
 
-        query_set_to_delete = query_set.filter(pk__in=body.pks)
+        query_set_to_delete = query_set.filter(
+            pk__in=[cls.fix_pk_type(pk) for pk in body.pks]
+        )
         query_set_to_delete.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @typing.final
+    @classmethod
+    def create_router(cls) -> Api:
+        root = cls.path_root or cls.model._meta.model_name
+        router = Api(f"model/{root}/")
 
-class MyModel(AbstractModel):
-    pass
+        router.endpoint("pk", method="GET")(cls.get)
+        router.endpoint("all", method="GET")(cls.all)
+        router.endpoint("where", method="GET")(cls.find)
 
+        router.endpoint("insert", method="POST")(cls.insert)
+        router.endpoint("insert-many", method="POST")(cls.insert_many)
 
-class ClassroomView(ModelView[MyModel]):
-    model = MyModel
-    base_filter_query = None
+        router.endpoint("update", method="PATCH")(cls.update_one)
+        router.endpoint("update-many", method="PATCH")(cls.update_many)
+
+        router.endpoint("delete", method="DELETE")(cls.delete_one)
+        router.endpoint("delete-manay", method="DELETE")(cls.delete_many)
+
+        return router
