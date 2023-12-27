@@ -65,10 +65,10 @@ class ModelView[T: AbstractModel](PermissionMixin):
         query_set = cls._get_query_set(request)
 
         # paginate
-        pagenated_list = paginate_by_queryparam(request, query_set)
+        paginated_list = paginate_by_queryparam(request, query_set)
 
         # response
-        return Response([cls.serializer_func(i, "ALL") for i in pagenated_list])
+        return Response([cls.serializer_func(i, "ALL") for i in paginated_list])
 
     @classmethod
     def find(cls, request: Request) -> Response:
@@ -76,8 +76,8 @@ class ModelView[T: AbstractModel](PermissionMixin):
         query = makeQuery(body.where)
         queryset = cls._get_query_set(request).filter(query)
 
-        pagenated_list = paginate(queryset, limit=body.limit, offset=body.offset)
-        return Response([cls.serializer_func(i, "FIND") for i in pagenated_list])
+        paginated_list = paginate(queryset, limit=body.limit, offset=body.offset)
+        return Response([cls.serializer_func(i, "FIND") for i in paginated_list])
 
     def insert(self, data):
         return self.model.objects.create(**data)
