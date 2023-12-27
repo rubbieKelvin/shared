@@ -52,7 +52,7 @@ class ModelView[T: AbstractModel](PermissionMixin):
     @classmethod
     def get(cls, request: Request) -> Response:
         # validate
-        body = validate_request(GetOneSchema, request)
+        body = validate_request(PkSchema, request)
 
         # get row scope
         query_set = cls._get_query_set(request)
@@ -149,13 +149,27 @@ class ModelView[T: AbstractModel](PermissionMixin):
 
         return Response([cls.serializer_func(i, "UPDATE_MANY") for i in instances])
 
-    def delete_one(self, pk):
-        instance = self.get_one(pk)
+    @classmethod
+    def delete_one(cls, request: Request) -> Response:
+        cls.permit_delete(request)
+        query_set = cls._get_query_set(request)
+        body = validate_request(PkSchema, request)
+
+        instance = query_set.get(pk=body.pk)
         instance.delete()
 
-    def delete_many(self, pk_list):
-        queryset = self.model.objects.filter(pk__in=pk_list)
-        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @classmethod
+    def delete_many(cls, request: Request) -> Response:
+        cls.permit_delete(request)
+
+        query_set = cls._get_query_set(request)
+        body = validate_request(PksSchema, request)
+
+        query_set_to_delete = query_set.filter(pk__in=body.pks)
+        query_set_to_delete.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class MyModel(AbstractModel):

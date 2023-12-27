@@ -2,8 +2,12 @@ from typing import Any
 from pydantic import BaseModel
 
 
-class GetOneSchema(BaseModel):
+class PkSchema(BaseModel):
     pk: int | str
+
+
+class PksSchema(BaseModel):
+    pks: list[int | str]
 
 
 class FindManySchema(BaseModel):
@@ -16,11 +20,9 @@ class InsertManySchema[T: BaseModel](BaseModel):
     objects: list[T]
 
 
-class UpdateOneSchema[T: BaseModel](BaseModel):
-    pk: int | str
+class UpdateOneSchema[T: BaseModel](PkSchema):
     set_: T
 
 
-class UpdateManySchema[T: BaseModel](BaseModel):
-    pks: list[int | str]
+class UpdateManySchema[T: BaseModel](PksSchema):
     set_: T
