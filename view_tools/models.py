@@ -11,8 +11,8 @@ from rest_framework.response import Response
 from shared.utils.query import makeQuery
 from shared.abstractmodel import AbstractModel
 
-from .paths import Api
 from .body_tools import validate_request
+from .paths import Api, PERMISSION_INPUT_TYPES
 from .pagination import paginate_by_queryparam, paginate
 from .exceptions import ResourceNotFound, AccessPermissionError, ApiException
 
@@ -237,21 +237,39 @@ class ModelView[T: AbstractModel](PermissionMixin):
 
     @typing.final
     @classmethod
-    def create_router(cls) -> Api:
+    def create_router(
+        cls,
+        get_permission: PERMISSION_INPUT_TYPES | None = None,
+        insert_permission: PERMISSION_INPUT_TYPES | None = None,
+        update_permission: PERMISSION_INPUT_TYPES | None = None,
+        delete_permission: PERMISSION_INPUT_TYPES | None = None,
+    ) -> Api:
         root = cls.path_root or cls.model._meta.model_name
         router = Api(f"model/{root}/")
 
-        router.endpoint("pk", method="GET")(cls.get)
-        router.endpoint("all", method="GET")(cls.all)
-        router.endpoint("where", method="GET")(cls.find)
+        router.endpoint("pk", method="GET", permission=get_permission)(cls.get)
+        router.endpoint("all", method="GET", permission=get_permission)(cls.all)
+        router.endpoint("where", method="GET", permission=get_permission)(cls.find)
 
-        router.endpoint("insert", method="POST")(cls.insert)
-        router.endpoint("insert-many", method="POST")(cls.insert_many)
+        router.endpoint("insert", method="POST", permission=insert_permission)(
+            cls.insert
+        )
+        router.endpoint("insert-many", method="POST", permission=insert_permission)(
+            cls.insert_many
+        )
 
-        router.endpoint("update", method="PATCH")(cls.update_one)
-        router.endpoint("update-many", method="PATCH")(cls.update_many)
+        router.endpoint("update", method="PATCH", permission=update_permission)(
+            cls.update_one
+        )
+        router.endpoint("update-many", method="PATCH", permission=update_permission)(
+            cls.update_many
+        )
 
-        router.endpoint("delete", method="DELETE")(cls.delete_one)
-        router.endpoint("delete-manay", method="DELETE")(cls.delete_many)
+        router.endpoint("delete", method="DELETE", permission=delete_permission)(
+            cls.delete_one
+        )
+        router.endpoint("delete-manay", method="DELETE", permission=delete_permission)(
+            cls.delete_many
+        )
 
         return router
