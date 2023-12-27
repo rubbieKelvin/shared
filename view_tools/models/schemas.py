@@ -10,3 +10,7 @@ class FindManySchema(BaseModel):
     where: dict[str, Any]
     limit: int = 100
     offset: int = 0
+
+
+class InsertManySchema[T: BaseModel](BaseModel):
+    objects: list[T]

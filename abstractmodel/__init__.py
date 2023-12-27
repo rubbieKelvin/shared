@@ -59,10 +59,12 @@ def _handle_dumps_substructure(
         raise Exception("Invalid structure value for object field")
 
 
-class AbstactModelObject(models.Manager):
+class AbstactModelObject[T: models.Model](models.Manager):
+    model: type[T]
+
     def get_or_raise_exception(
         self, query: models.Q, exception: BaseException = Exception("Object not found")
-    ):
+    ) -> T:
         try:
             return self.get(query)
         except models.Model.DoesNotExist:

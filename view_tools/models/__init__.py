@@ -4,6 +4,7 @@ import typing
 from pydantic import BaseModel
 from django.db.models import Q, QuerySet
 
+from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -21,6 +22,8 @@ from .mixins import PermissionMixin
 
 class ModelView[T: AbstractModel](PermissionMixin):
     model: type[T]
+    insert_schema: type[BaseModel]
+    insert_many_schema: type[InsertManySchema]
     base_filter_query: Q | None = None
 
     @classmethod
@@ -79,12 +82,28 @@ class ModelView[T: AbstractModel](PermissionMixin):
         paginated_list = paginate(queryset, limit=body.limit, offset=body.offset)
         return Response([cls.serializer_func(i, "FIND") for i in paginated_list])
 
-    def insert(self, data):
-        return self.model.objects.create(**data)
+    @classmethod
+    def insert(cls, request: Request) -> Response:
+        cls.permit_insert(request)
+        body = validate_request(cls.insert_schema, request)
 
-    def insert_many(self, data_list):
-        instances = [self.model(**data) for data in data_list]
-        return self.model.objects.bulk_create(instances)
+        res: T = cls.model.objects.create(**body.model_dump())
+        return Response(
+            cls.serializer_func(res, "INSERT"), status=status.HTTP_201_CREATED
+        )
+
+    @classmethod
+    def insert_many(cls, request: Request) -> Response:
+        cls.permit_insert(request)
+        body = validate_request(cls.insert_many_schema, request)
+        instances = [cls.model(**data) for data in body.objects]
+
+        res: list[T] = cls.model.objects.bulk_create(instances)
+
+        return Response(
+            [cls.serializer_func(i, "INSERT_MANY") for i in res],
+            status=status.HTTP_201_CREATED,
+        )
 
     def update_one(self, pk, data):
         instance = self.get_one(pk)
