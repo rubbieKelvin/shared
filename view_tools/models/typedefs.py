@@ -7,8 +7,7 @@ MODEL_VIEW_ACTIONS = typing.Literal[
     "INSERT",
     "INSERT_MANY",
     "UPDATE_ONE",
-    "UPDATE_WHERE",
+    "UPDATE_MANY",
     "DELETE",
-    "DELETE_WHERE",
     "DELETE_MANY",
 ]

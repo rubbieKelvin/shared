@@ -22,9 +22,15 @@ from .mixins import PermissionMixin
 
 class ModelView[T: AbstractModel](PermissionMixin):
     model: type[T]
-    insert_schema: type[BaseModel]
-    insert_many_schema: type[InsertManySchema]
     base_filter_query: Q | None = None
+    must_update_fields: list[str] = [
+        "last_updated"
+    ]  # fields that must be updated when updating model
+
+    insert_schema: type[BaseModel]
+    update_schema: type[UpdateOneSchema]
+    update_many_schema: type[UpdateManySchema]
+    insert_many_schema: type[InsertManySchema]
 
     @classmethod
     def serializer_func(
@@ -105,31 +111,47 @@ class ModelView[T: AbstractModel](PermissionMixin):
             status=status.HTTP_201_CREATED,
         )
 
-    def update_one(self, pk, data):
-        instance = self.get_one(pk)
-        for key, value in data.items():
-            setattr(instance, key, value)
-        instance.save()
-        return instance
+    @classmethod
+    def update_one(cls, request: Request) -> Response:
+        cls.permit_update(request)
+        body = validate_request(cls.update_schema, request)
 
-    def update_many(self, data_list):
-        instances = []
-        for data in data_list:
-            pk = data.pop("pk", None)
-            instance = self.get_one(pk)
-            for key, value in data.items():
+        queryset = cls._get_query_set(request)
+        instance = queryset.get(pk=body.pk)
+        set_ = body.model_dump().get("set_", {})
+
+        for key, value in set_:
+            setattr(instance, key, value)
+
+        instance.save()
+        return Response(cls.serializer_func(instance, "UPDATE_ONE"))
+
+    @classmethod
+    def update_many(cls, request: Request) -> Response:
+        cls.permit_update(request)
+        query_set = cls._get_query_set(request)
+        body = validate_request(cls.update_many_schema, request)
+        set_: dict[str, typing.Any] = body.model_dump().get("set_", {})
+
+        instances: list[T] = []
+
+        for pk in body.pks:
+            instance = query_set.get(pk=pk)
+
+            for key, value in set_.items():
                 setattr(instance, key, value)
+
             instances.append(instance)
-        self.model.objects.bulk_update(instances, fields=data.keys())
-        return instances
+
+        cls.model.objects.bulk_update(
+            instances, fields=[*set_.keys(), *cls.must_update_fields]
+        )
+
+        return Response([cls.serializer_func(i, "UPDATE_MANY") for i in instances])
 
     def delete_one(self, pk):
         instance = self.get_one(pk)
         instance.delete()
-
-    def delete_where(self, **kwargs):
-        queryset = self.find_where(**kwargs)
-        queryset.delete()
 
     def delete_many(self, pk_list):
         queryset = self.model.objects.filter(pk__in=pk_list)

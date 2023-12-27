@@ -14,3 +14,13 @@ class FindManySchema(BaseModel):
 
 class InsertManySchema[T: BaseModel](BaseModel):
     objects: list[T]
+
+
+class UpdateOneSchema[T: BaseModel](BaseModel):
+    pk: int | str
+    set_: T
+
+
+class UpdateManySchema[T: BaseModel](BaseModel):
+    pks: list[int | str]
+    set_: T
