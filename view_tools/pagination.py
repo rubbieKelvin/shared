@@ -8,7 +8,7 @@ I = typing.TypeVar("I", list, tuple, QuerySet)
 
 class PaginationData(BaseModel):
     offset: int = 0
-    limit: int = 10
+    limit: int = 100
 
 
 def paginate(iterable: I, limit: int, offset: int) -> I:

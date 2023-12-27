@@ -12,8 +12,6 @@ from rest_framework.response import Response
 
 from . import exceptions
 
-M = typing.TypeVar("M", bound=BaseModel)
-
 
 def _get_request_object_from_args(args: list) -> Request:
     for arg in args:
@@ -43,17 +41,9 @@ def validate(schema: type[BaseModel]):
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Response:
             request = _get_request_object_from_args([*args, *kwargs.values()])
-            data = typing.cast(dict | QueryDict, request.data)
-
-            if type(data) is QueryDict:
-                data = typing.cast(dict, data.dict())
-
-            data = typing.cast(dict, data)
-            assert type(data) is dict, "Can only validate map-like request-bodies"
 
             try:
-                model_instance = schema.model_validate(data)
-                setattr(request, "validated_body", model_instance)
+                validate_request(schema, typing.cast(Request, request))
                 return func(*args, **kwargs)
 
             except _pydantic_core.ValidationError as error:
@@ -73,7 +63,25 @@ def validate(schema: type[BaseModel]):
     return decorator
 
 
-def get_validated_body(request: Request) -> M:
+def validate_request[T: BaseModel](schema: type[T], request: Request) -> T:
+    data = typing.cast(dict | QueryDict, request.data)
+
+    if type(data) is QueryDict:
+        data = typing.cast(dict, data.dict())
+
+    data = typing.cast(dict, data)
+    assert type(data) is dict, "Can only validate map-like request-bodies"
+
+    try:
+        model_instance = schema.model_validate(data)
+        setattr(request, "validated_body", model_instance)
+        return model_instance
+
+    except _pydantic_core.ValidationError as error:
+        raise error
+
+
+def get_validated_body[M: BaseModel](request: Request) -> M:
     """
     Get the validated request body from a Django Rest Framework request.
 

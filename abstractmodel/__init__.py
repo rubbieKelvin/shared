@@ -269,6 +269,7 @@ class AbstractModel(models.Model):
             f"{self.__class__.__name__}_PydanticModel",
             __config__=pydantic.ConfigDict(from_attributes=True),
             __base__=None,
+            __doc__=None,
             __module__=__name__,
             __validators__=None,
             __cls_kwargs__=None,
