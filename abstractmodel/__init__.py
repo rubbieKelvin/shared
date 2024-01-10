@@ -3,7 +3,7 @@ import pydantic
 
 from uuid import uuid4
 from django.db import models
-from django.db.models.fields.related import ForeignKey
+from django.utils import timezone
 
 from . import utils
 from . import serialization
@@ -89,7 +89,7 @@ class AbstractModel(models.Model):
     """
 
     id = models.UUIDField(unique=True, default=uuid4, primary_key=True, editable=False)
-    date_created = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField(default=timezone.now)
     date_updated = models.DateTimeField(auto_now=True)
 
     objects: AbstactModelObject = AbstactModelObject()
