@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("The email must be set")
 
-        email = self.normalize_email(email)
+        email = self.normalize_email(email.lower())
 
         # more validation
         # ...

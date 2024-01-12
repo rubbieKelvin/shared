@@ -88,6 +88,10 @@ class AbstractModel(models.Model):
         # Your model fields and methods here
     """
 
+    _serializer_transformers: dict[
+        str, typing.Callable[[typing.Any], typing.Any]
+    ] | None = None
+
     id = models.UUIDField(unique=True, default=uuid4, primary_key=True, editable=False)
     date_created = models.DateTimeField(default=timezone.now)
     date_updated = models.DateTimeField(auto_now=True)
@@ -169,7 +173,8 @@ class AbstractModel(models.Model):
         return res
 
     def serialize(
-        self, structure: serialization.SerializationStructure | str | None = None
+        self,
+        structure: serialization.SerializationStructure | str | None = None,
     ) -> dict[str, typedefs.Json]:
         """
         Serialize the model instance based on the provided structure.
@@ -188,6 +193,7 @@ class AbstractModel(models.Model):
             dict[str, typedefs.Json]: A dictionary containing the serialized data.
 
         """
+        transformers = self._serializer_transformers or {}
 
         # Use the provided structure or the default serialization structure
         if structure is None:
@@ -199,7 +205,7 @@ class AbstractModel(models.Model):
         structure = typing.cast(serialization.SerializationStructure, structure)
 
         # Initialize the result dictionary to store serialized data
-        result = {}
+        result: dict[str, typing.Any] = {}
 
         # get a plain list of all the properties we need to fetch
         # remove all meta properties (ones begining with __, they'll be used for configuration)
@@ -266,7 +272,10 @@ class AbstractModel(models.Model):
                 result[field] = getattr(self, field)
 
         # Create a dynamic Pydantic model to convert the result into a json serializable dictionary
-        dynamic_model_config = {k: (typing.Any, v) for k, v in result.items()}
+        dynamic_model_config = {
+            k: (typing.Any, (transformers[k](v) if transformers.get(k) else v))
+            for k, v in result.items()
+        }
         dynamic_model = pydantic.create_model(
             f"{self.__class__.__name__}_PydanticModel",
             __config__=pydantic.ConfigDict(from_attributes=True),
