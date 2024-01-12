@@ -19,8 +19,11 @@ def validate_password(password: str):
     """
 
     # Check password length
-    if len(password) < 6:
-        raise ValueError("Password must be at least 6 characters long")
+    min_password_length = 7
+    if len(password) < min_password_length:
+        raise ValueError(
+            f"Password must be at least {min_password_length} characters long"
+        )
 
     # Check if the password contains at least one digit OR one special character
     if not re.search(r"\d|[^A-Za-z0-9]", password):
