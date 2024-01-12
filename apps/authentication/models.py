@@ -21,9 +21,6 @@ class UserManager(BaseUserManager):
 
         email = self.normalize_email(email.lower())
 
-        # more validation
-        # ...
-
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
 
