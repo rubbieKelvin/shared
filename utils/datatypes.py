@@ -131,3 +131,31 @@ def find(arr: typing.Sequence[T], finder: typing.Callable[[T], bool]) -> T | Non
         if finder(i):
             return i
     return None
+
+
+def booleanString(value: str) -> bool:
+    """
+    Convert a string to a boolean value.
+
+    This function takes a string and attempts to convert it to a boolean value.
+    If the conversion is successful, the function returns True if the string is "true" (case-insensitive).
+    Otherwise, it returns False.
+
+    Parameters:
+        value (str): The string to be converted to a boolean value.
+
+    Returns:
+        bool: True if the string is "true" (case-insensitive), otherwise False.
+
+    Example:
+        print(booleanString("true"))  # Output: True
+        print(booleanString("True"))  # Output: True
+        print(booleanString("TRUE"))  # Output: True
+        print(booleanString("false"))  # Output: False
+        print(booleanString("abc"))  # Output: False
+        print(booleanString("123"))  # Output: False
+        print(booleanString(""))  # Output: False
+        print(booleanString(None))  # Output: False
+    """
+    true_aliases = ["true", "yes", "1", "y"]
+    return value.lower() in true_aliases
