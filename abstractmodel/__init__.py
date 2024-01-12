@@ -88,6 +88,12 @@ class AbstractModel(models.Model):
         # Your model fields and methods here
     """
 
+    # A dictionary of transformers to be applied to the serialized data
+    # The key is the name of the field and the value is a function that takes in the value of the field and returns the transformed value
+    # Example:
+    # _serializer_transformers = {
+    #     "avatar": lambda value: value.url if value and hasattr(value, "url") else None
+    # }
     _serializer_transformers: dict[
         str, typing.Callable[[typing.Any], typing.Any]
     ] | None = None
