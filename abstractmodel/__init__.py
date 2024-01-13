@@ -303,6 +303,7 @@ class AbstractModel(models.Model):
         self,
         request: Request,
         permissions: list[_PERMISSION_HANDLER_TYPE] | tuple[_PERMISSION_HANDLER_TYPE],
+        mode: typing.Literal["all", "any"] = "any",
     ):
         """
         Assert Permissions for a Model Instance
@@ -340,8 +341,23 @@ class AbstractModel(models.Model):
             ```
         """
 
+        fail_count = 0
+        first_exception = None
+
         for permission in permissions:
             try:
                 permission(request, self)
+                return self
             except exceptions.AccessPermissionError as e:
-                raise e
+                fail_count += 1
+
+                if not first_exception:
+                    first_exception = e
+
+                # If the mode is "all" and any of the permissions failed, raise the first exception
+                if mode == "all":
+                    raise e
+
+        # If the mode is "any" and all the permissions failed, raise the first exception
+        if mode == "any" and fail_count == len(permissions):
+            raise first_exception or exceptions.AccessPermissionError("Access denied")

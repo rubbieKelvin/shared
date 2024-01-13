@@ -133,7 +133,7 @@ def find(arr: typing.Sequence[T], finder: typing.Callable[[T], bool]) -> T | Non
     return None
 
 
-def booleanString(value: str) -> bool:
+def booleanString(value: str | None) -> bool:
     """
     Convert a string to a boolean value.
 
@@ -158,4 +158,6 @@ def booleanString(value: str) -> bool:
         print(booleanString(None))  # Output: False
     """
     true_aliases = ["true", "yes", "1", "y"]
-    return value.lower() in true_aliases
+    if value:
+        return value.lower() in true_aliases
+    return False
