@@ -25,4 +25,9 @@ class ResourceNotFound(ApiException):
 
 class AccessPermissionError(ApiException):
     response_status = status.HTTP_401_UNAUTHORIZED
-    default_code = "This entity is unable to access this resource"
+    default_code = "Access denied"
+
+
+class Forbidden(ApiException):
+    response_status = status.HTTP_403_FORBIDDEN
+    default_code = "You are not authorized to access this resource"

@@ -59,7 +59,7 @@ def _handle_dumps_substructure(
         raise Exception("Invalid structure value for object field")
 
 
-class AbstactModelObject[T: models.Model](models.Manager):
+class AbstactModelObject[T: models.Model](models.Manager[T]):
     model: type[T]
 
     def get_or_raise_exception(
@@ -102,7 +102,7 @@ class AbstractModel(models.Model):
     date_created = models.DateTimeField(default=timezone.now)
     date_updated = models.DateTimeField(auto_now=True)
 
-    objects: AbstactModelObject = AbstactModelObject()
+    objects: AbstactModelObject[typing.Self] = AbstactModelObject()
 
     class Meta:
         abstract = True
@@ -115,6 +115,16 @@ class AbstractModel(models.Model):
             str: A string containing the model's class name and primary key.
         """
         return f"<{self.__class__.__name__} pk={str(self.pk)}>"
+
+    @classmethod
+    def active_rows(cls) -> AbstactModelObject:
+        """
+        Returns all active rows from the model.
+
+        :return: QuerySet of active rows.
+        :rtype: models.QuerySet
+        """
+        return cls.objects.all()
 
     @property
     def serializers(
