@@ -1,9 +1,9 @@
 import typing
 from pydantic import BaseModel
-from django.db.models import QuerySet
 from rest_framework.request import Request
+from django.db.models import QuerySet, Manager
 
-I = typing.TypeVar("I", list, tuple, QuerySet)
+I = typing.TypeVar("I", list, tuple, QuerySet, Manager, covariant=True)
 
 
 class PaginationData(BaseModel):
