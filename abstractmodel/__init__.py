@@ -312,7 +312,7 @@ class AbstractModel(models.Model):
     def assert_permissions(
         self,
         request: Request,
-        permissions: list[_PERMISSION_HANDLER_TYPE] | tuple[_PERMISSION_HANDLER_TYPE],
+        permissions: typing.Sequence[_PERMISSION_HANDLER_TYPE],
         mode: typing.Literal["all", "any"] = "any",
     ):
         """
