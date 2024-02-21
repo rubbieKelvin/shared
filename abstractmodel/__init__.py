@@ -67,7 +67,7 @@ class AbstactModelObject[T: models.Model](models.Manager[T]):
     ) -> T:
         try:
             return self.get(query)
-        except models.Model.DoesNotExist:
+        except self.model.DoesNotExist:
             raise exception
 
 
