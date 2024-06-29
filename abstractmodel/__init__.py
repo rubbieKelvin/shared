@@ -4,6 +4,7 @@ import pydantic
 from uuid import uuid4
 from django.db import models
 from django.utils import timezone
+from django.db.models import ObjectDoesNotExist
 
 from . import utils
 from . import serialization
@@ -16,8 +17,9 @@ from rest_framework.request import Request
 
 def _handle_dumps_substructure(
     model_instance: models.Model | None,
-    substructure: serialization.SerializationStructure
-    | serialization.ObjectSerializationMode,
+    substructure: (
+        serialization.SerializationStructure | serialization.ObjectSerializationMode
+    ),
 ):
     """
     Handle the serialization of a substructure of an AbstractModel instance.
@@ -59,7 +61,7 @@ def _handle_dumps_substructure(
         raise Exception("Invalid structure value for object field")
 
 
-class AbstactModelObject[T: models.Model](models.Manager[T]):
+class AbstactModelObject[T: models.Model](models.Manager):
     model: type[T]
 
     def get_or_raise_exception(
@@ -67,7 +69,7 @@ class AbstactModelObject[T: models.Model](models.Manager[T]):
     ) -> T:
         try:
             return self.get(query)
-        except self.model.DoesNotExist:
+        except ObjectDoesNotExist:
             raise exception
 
 
@@ -94,9 +96,9 @@ class AbstractModel(models.Model):
     # _serializer_transformers = {
     #     "avatar": lambda value: value.url if value and hasattr(value, "url") else None
     # }
-    _serializer_transformers: dict[
-        str, typing.Callable[[typing.Any], typing.Any]
-    ] | None = None
+    _serializer_transformers: (
+        dict[str, typing.Callable[[typing.Any], typing.Any]] | None
+    ) = None
 
     id = models.UUIDField(unique=True, default=uuid4, primary_key=True, editable=False)
     date_created = models.DateTimeField(default=timezone.now)
@@ -245,6 +247,8 @@ class AbstractModel(models.Model):
                     sub_structure = serialization.struct(
                         *utils.getAllModelFields(related_field.model)
                     )
+                    
+                sub_structure = typing.cast(serialization.SerializationStructure, sub_structure)
 
                 if related_field.type == "object":
                     # handle one to one foriegn key
@@ -259,7 +263,7 @@ class AbstractModel(models.Model):
                 elif related_field.type == "list":
                     # handle related model
                     related_manager = typing.cast(
-                        "models.manager.RelatedManager", getattr(self, field)
+                        models.Manager, getattr(self, field)
                     )
 
                     # if query is also included in the structure

@@ -5,3 +5,4 @@ pytest
 furl
 django-rest-knox
 nanoid
+python-ulid[pydantic]
