@@ -1,7 +1,6 @@
 import typing
 import pydantic
 
-from uuid import uuid4
 from django.db import models
 from django.utils import timezone
 from django.db.models import ObjectDoesNotExist
@@ -10,10 +9,10 @@ from . import utils
 from . import serialization
 
 from shared import typedefs
+from shared.fields.uild import ULIDField
 from shared.view_tools import exceptions
 
 from rest_framework.request import Request
-
 
 def _handle_dumps_substructure(
     model_instance: models.Model | None,
@@ -48,8 +47,10 @@ def _handle_dumps_substructure(
 
     if substructure == "SERIALIZE_AS_PK":
         return model_instance.pk
+    
     elif substructure == "SERIALIZE_AS_STRING":
         return model_instance.__str__()
+    
     elif type(substructure) is dict:
         if isinstance(model_instance, AbstractModel):
             return model_instance.serialize(substructure)
@@ -79,7 +80,7 @@ class AbstractModel(models.Model):
     'date_created', and 'date_updated'.
 
     Attributes:
-    - id (UUIDField): A unique identifier for the model instance.
+    - id (ULIDField): A unique identifier for the model instance.
     - date_created (DateTimeField): The date and time when the instance was created.
     - date_updated (DateTimeField): The date and time when the instance was last updated.
 
@@ -100,7 +101,7 @@ class AbstractModel(models.Model):
         dict[str, typing.Callable[[typing.Any], typing.Any]] | None
     ) = None
 
-    id = models.UUIDField(unique=True, default=uuid4, primary_key=True, editable=False)
+    id = ULIDField(primary_key=True)
     date_created = models.DateTimeField(default=timezone.now)
     date_updated = models.DateTimeField(auto_now=True)
 
