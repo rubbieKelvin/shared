@@ -37,7 +37,7 @@ Effortlessly validate request bodies using Pydantic, a powerful data validation 
 
 To integrate this library into your project, follow these steps:
 
-### 1. Clone the Repository
+### Option 1. Clone the Repository
 
 Clone this repository into your project directory:
 
@@ -47,13 +47,49 @@ git clone https://github.com/rubbieKelvin/shared
 
 This method is suitable when you want to keep your library up-to-date by pulling changes from the remote repository.
 
-### 2. Add as a Git Submodule (Optional)
+### Option 2. Add as a Git Submodule
 
 If you have a fork of this library and want to keep it linked to your project while also receiving updates, you can add it as a Git submodule. Use the following command within your project directory:
 
 ```shell
 git submodule add https://github.com/rubbieKelvin/shared shared-library
 ```
+
+#### Removing the submodule
+If you wish to remove the submodule you'll nee to follow these steps (yeahm it's quite lengthy)
+To remove the submodule and delete the `shared-library` folder, follow these steps:
+
+1. **Remove the submodule entry from `.gitmodules`**  
+   ```sh
+   git config -f .gitmodules --remove-section submodule.shared-library
+   ```
+
+2. **Remove the submodule from `.git/config`**  
+   ```sh
+   git config -f .git/config --remove-section submodule.shared-library
+   ```
+
+3. **Unstage the submodule and remove it from tracking**  (if it was commited)  
+   ```sh
+   git rm --cached shared-library
+   ```
+
+4. **Delete the actual submodule folder**  
+   ```sh
+   rm -rf shared-library
+   ```
+
+5. **Remove the submodule from Git history** (optional, if you committed it)  
+   ```sh
+   git commit -m "Removed shared-library submodule"
+   ```
+
+6. **Remove the `shared-library` entry from `.git/modules`**  
+   ```sh
+   rm -rf .git/modules/shared-library
+   ```
+
+After this, the submodule should be completely removed from your repository. If you haven't committed it yet, just running steps 1-4 should be enough.
 
 This submodule is a convenient way to manage an external codebase within your project.
 
