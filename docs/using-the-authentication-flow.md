@@ -1,5 +1,5 @@
-install `django-rest-knox`
-add `knox` to installed path
+install `django-rest-knox`<br>
+add `knox` to installed path<br>
 add the following to settings
 
 ```
@@ -13,8 +13,10 @@ add `shared.apps.authentication` to installed apps
 
 <!-- TODO: Say why this is optional -->
 
-(optional) extend `shared.apps.authentication.models.ExtensibleUser`
-add `path("auth/", include("shared.apps.authentication.urls"))` to urlpatterns
+(optional) extend `shared.apps.authentication.models.ExtensibleUser`<br>
+add `path("auth/", include("shared.apps.authentication.urls"))` to urlpatterns<br>
+add whichever model you use, you set the [model in your settings](https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#substituting-a-custom-user-model)
+
 setup static:
 
 ```
@@ -29,7 +31,7 @@ STATIC_URL = "/static/"
 
 set `SHARED` in settings
 add `AUTHENTICATION_CONFIG` in `SHARED`
-and create an instance of `shared.apps.authentication.settings.AuthenticationConfiguration`
+and create an instance of `shared.apps.authentication.settings.AuthConf`
 
 like so
 
