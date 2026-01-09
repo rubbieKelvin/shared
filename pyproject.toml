@@ -13,6 +13,7 @@ dependencies = [
 [tool.basedpyright]
 venv = ".venv"
 venvPath = "."
+reportAny = false
 reportUnannotatedClassAttribute = false
 reportUnknownVariableType = false
 
