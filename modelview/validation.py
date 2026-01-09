@@ -9,6 +9,8 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from exceptions import ErrorType
+
 
 def _get_request_object_from_args(*args: t.Any) -> Request:
     for arg in args:
@@ -39,11 +41,11 @@ def validate(schema: type[BaseModel]):
             request = _get_request_object_from_args([*args, *kwargs.values()])
 
             try:
-                validate_request(schema, t.cast(Request, request))
+                _ = validate_request(schema, request)
                 return func(*args, **kwargs)
 
             except ValidationError as error:
-                message: exceptions.Error = {
+                message: ErrorType = {
                     "error": "invalid data in body",
                     "code": "INPUT_ERROR",
                     "meta": json.loads(error.json()),
