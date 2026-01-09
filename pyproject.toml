@@ -1,0 +1,27 @@
+[project]
+name = "shared"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.2.10",
+    "djangorestframework>=3.16.1",
+    "pydantic[email]>=2.12.5",
+]
+
+[tool.basedpyright]
+venv = ".venv"
+venvPath = "."
+reportUnannotatedClassAttribute = false
+reportUnknownVariableType = false
+
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.0",
+    "basedpyright>=1.31.6",
+    "django-import-export>=4.3.14",
+    "django-stubs[compatible-mypy]>=5.2.7",
+    "djangorestframework-stubs[compatible-mypy]>=3.16.4",
+]
