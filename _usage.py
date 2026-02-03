@@ -30,7 +30,7 @@ router = (
     ModelRouter[Roles](MyModel)
     .with_queryset(models.Q())
     .with_role_factory(get_role)
-    .set_select_permission({"admin": {"rows": models.Q(), "mode": "SELECT_ONE_ONLY"}})
+    .set_select_permission({"admin": FULL_ACCESS.select})
     .build()
 )
 

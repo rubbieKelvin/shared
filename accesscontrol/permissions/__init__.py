@@ -16,9 +16,8 @@ class PermissionSet[InsertSchema: BaseModel, UpdateSchema: BaseModel](t.TypedDic
     delete: t.NotRequired[DeletePermissionConfig]
 
 
-FULL_ACCESS: PermissionSet[t.Any, t.Any] = {
-    "insert": {"mode": "INSERT_ONE_AND_MANY", "columns": "all"},
-    "delete": {"mode": "DELETE_ONE_AND_MANY", "rows": Q()},
-    "select": {"mode": "SELECT_ONE_AND_MANY", "rows": Q(), "columns": "all"},
-    "update": {"mode": "UPDATE_ONE_AND_MANY", "columns": "all", "rows": Q()},
-}
+class FULL_ACCESS:
+    insert: InsertPermissionConfig[t.Any] = {"mode": "INSERT_ONE_AND_MANY", "columns": "all"}
+    delete: DeletePermissionConfig = {"mode": "DELETE_ONE_AND_MANY", "rows": Q()}
+    select: SelectPermissionConfig = {"mode": "SELECT_ONE_AND_MANY", "rows": Q(), "columns": "all"}
+    update: UpdatePermissionConfig[t.Any] = {"mode": "UPDATE_ONE_AND_MANY", "columns": "all", "rows": Q()}
