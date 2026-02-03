@@ -5,5 +5,5 @@ from pydantic import BaseModel
 
 class InsertPermissionConfig[T: BaseModel](t.TypedDict):
     mode: t.Literal["INSERT_ONE_ONLY", "INSERT_MANY_ONLY", "INSERT_ONE_AND_MANY"]
-    columns: t.NotRequired[list[str]]
+    columns: t.NotRequired[list[str] | t.Literal["all"]]
     schema: t.NotRequired[BaseModel]

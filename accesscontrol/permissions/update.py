@@ -7,5 +7,5 @@ from pydantic import BaseModel
 class UpdatePermissionConfig[T: BaseModel](t.TypedDict):
     mode: t.Literal["UPDATE_ONE_ONLY", "UPDATE_MANY_ONLY", "UPDATE_ONE_AND_MANY"]
     rows: t.NotRequired[Q]
-    columns: t.NotRequired[list[str]]
+    columns: t.NotRequired[list[str] | t.Literal["all"]]
     schema: t.NotRequired[T]

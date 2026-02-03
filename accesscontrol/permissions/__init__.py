@@ -1,5 +1,6 @@
 import typing as t
 
+from django.db.models import Q
 from pydantic import BaseModel
 
 from .delete import DeletePermissionConfig
@@ -16,10 +17,8 @@ class PermissionSet[InsertSchema: BaseModel, UpdateSchema: BaseModel](t.TypedDic
 
 
 FULL_ACCESS: PermissionSet[t.Any, t.Any] = {
-    "insert": {"mode": "INSERT_ONE_AND_MANY"},
-    "delete": {"mode": "DELETE_ONE_AND_MANY"},
-    "select": {"mode": "SELECT_ONE_AND_MANY"},
-    "update": {
-        "mode": "UPDATE_ONE_AND_MANY",
-    },
+    "insert": {"mode": "INSERT_ONE_AND_MANY", "columns": "all"},
+    "delete": {"mode": "DELETE_ONE_AND_MANY", "rows": Q()},
+    "select": {"mode": "SELECT_ONE_AND_MANY", "rows": Q(), "columns": "all"},
+    "update": {"mode": "UPDATE_ONE_AND_MANY", "columns": "all", "rows": Q()},
 }
